@@ -1,0 +1,144 @@
+<tw-storydata name="Oxhome" startnode="18" creator="Twine" creator-version="2.2.1" ifid="685AD138-1242-41B3-BD25-7C31C087B5EA" zoom="0.6" format="Harlowe" format-version="2.1.0" options="" hidden><style role="stylesheet" id="twine-user-stylesheet" type="text/twine-css">#demo {
+  font-family: "Courier New", Courier, monospace;
+  font-size: smaller;
+}
+
+
+
+</style><script role="script" id="twine-user-script" type="text/twine-javascript">var i = 0;
+var txt = `I have got the functions in the form of infinite series and have expressed it in two ways. In terms of Bernoullian numbers. From this we can easily calculate the number of prime numbers up to 100 millions with generally no error and in some cases with an error of 1 or` // 2. As a definite integral from which we can calculate for all values. I have also got an expression to find the actual`;
+var speed = 50;
+var next = ``
+
+window.custom = window.custom || {
+    goto : function (passageName) {
+        if (passageName) {
+            var $hiddenLink = $(document.createElement('tw-link'));
+            $hiddenLink
+                .addClass('custom-goto')
+                .attr('passage-name', passageName)
+                .append('"Miss Reid."')
+                .appendTo('tw-passage');
+        } else {
+            alert('no passage name given to the custom.goto() function');
+        }
+    }
+};
+
+function foo() {}
+
+
+function typeWriter() {
+  if (i < txt.length) {
+    document.getElementById("demo").innerHTML += txt.charAt(i);
+    i++;
+    setTimeout(typeWriter, speed);
+  } else
+	{
+		window.custom.goto("Start");
+	};
+};
+
+window.typeWriter = typeWriter</script><tw-passagedata pid="1" name="Start" tags="" position="101.66666666666657,536.0000000000001" size="100,100">The forewoman&#39;s voice tears you from your typing, and you look up to see Mrs. Sheffield, impassive as ever.
+
+&quot;Yes, ma&#39;am?&quot;
+
+&quot;[[Dr. Blackwell-&gt;blackwellDescription]] is asking for you in his office.&quot;
+
+&quot;Dr. Blackwell?&quot;
+
+&quot;Indeed. Best not keep him waiting.&quot;
+
+Her empty response offers no reprieve from the sudden anxiety twisting your inside into knots. Taking a shuddering breath to calm yourself, you rise from your seat, offer a silent nod, and [[exit-&gt;toBlackwell]].</tw-passagedata><tw-passagedata pid="2" name="waiting room 1" tags="" position="370.9999999999999,517.6666666666667" size="100,100">The room is furnished with a pair of leather armchairs, between which sits a table bearing a [[globe.-&gt;globe]]</tw-passagedata><tw-passagedata pid="3" name="framed" tags="" position="366.66666666666663,824.6666666666666" size="100,100">The walls are paneled in rich wood, broken by shelves of thick books. A [[framed newspaper clipping-&gt;newspaperbody]] seems out of place in the tableau.</tw-passagedata><tw-passagedata pid="4" name="newspaperbody" tags="" position="370.33333333333337,963.6666666666667" size="100,100">### SCOTT BREACHES THE RING
+#### CONTACT ESTABLISHED WITH GIANTS OF THE NORTH
+
+(live: 2s)[The framed clipping memorializes the (link-reveal:&quot;startling&quot;)[(show:?shock)] headline, dated 1908.(stop:)]
+
+|shock)[The shock of discovering people on the other half of the globe had been magnified a dozen-fold the moment it was discovered that those people *outscaled* us a dozen-fold. The Northerners had been surprised too, of course, but they knew nothing of the (link-reveal:&quot;fear&quot;)[(show:?fear)] that had gripped the South at this discovery.]
+
+|fear)[Everyone was terrified of the ease with which even one of these giants might invade the South, able to brush aside our infantry like rats. The children were haunted by nightmares of being devoured by these beasts, with their man-high mouths and capable teeth, and many a mother had whispered comforts she didn&#39;t quite believe to her babe.
+
+The (link-reveal:&quot;linguists&quot;)[(show:?linguists)] had been the saving grace of the expedition. ]
+
+|linguists)[They&#39;d been in communication for years at that point and had established quite the camaraderie. Fortunately, each party had brought along a few. Doctors Hammarström and Evans managed to smoothe over the shock of the encounter with inane, humanizing chatter about the climate, their respective wives, and so on. 
+
+Without them, you wonder whether everyone would have gone home and pretended nothing had ever happened.
+
+The sound Dr. Blackwill&#39;s [[office door-&gt;officedoor]] creaking open interrupts that thought.]</tw-passagedata><tw-passagedata pid="5" name="globe" tags="" position="370.33333333333326,669.3333333333334" size="100,100">With a single push, the globe is spinning smoothly on its axis. You idly let the ridges at its hemisphere catch on your fingertips, dragging it to a halt. A jagged belt of mountains and glaciers encircles the sphere, a circumferential range known as (link-reveal:&quot;The Ring&quot;)[(show:?ring)]. 
+
+|ring)[Your planet&#39;s dual suns keep the land around each pole a habitable temperature, but the rugged geology and frigid temperatures at the hemisphere render it (link-reveal:&quot;inhospitable&quot;)[(show:?inhospitable)].]
+
+|inhospitable)[And, (link-reveal:&quot;until recently&quot;)[(show:?recently)], impenetrable.]
+
+|recently)[For most of history there was little interest in exploring this presumed wasteland, but the radio transmissions had provided a motivation to probe for a crossing point.
+
+You turn your attention from the globe to [[inspect the rest of the room-&gt;framed]].]</tw-passagedata><tw-passagedata pid="6" name="officedoor" tags="" position="361,1136" size="100,100">A rather young academic emerges, startling at the sight of a woman in the department. He awards you an awkward nod and scuttles away, leaving the [[door ajar behind him.-&gt;enterblackwill]]</tw-passagedata><tw-passagedata pid="7" name="enterblackwill" tags="" position="361,1286" size="100,100">You knock awkwardly on the door and call inside. “Dr. Blackwill?”
+
+“Yes, come in, come in.”
+
+The department head is a rather rotund old man, with more hair on his upper lip than the whole of his scalp. He stares up at you from a trench of paperwork, a confused look on his face.
+
+“I’m Charlotte Reid,&quot; you offer. &quot;Mrs. Sheffield said you sent for me?”
+
+[[“Ah, yes, yes, please take a seat.”-&gt;blackwillsit]]</tw-passagedata><tw-passagedata pid="8" name="blackwillsit" tags="" position="361,1436" size="100,100">You obey, crossing your ankles and clasping your hands in your lap. “What can I do for you, sir?”
+
+&quot;You’ve heard of all the exchange business with the North, right? We are to have a visiting professor. I’m assigning you to assist him.&quot;
+
+&quot;The North... sir, do you mean Caeredin?&quot;
+
+&quot;No, Miss Reid, I mean *The North*. Sweoland.&quot; 
+
+You start at the revelation, mind already racing with the consequences.
+
+[[&quot;Forgive me, sir, but I don&#39;t understand how I could assist a Northerner.&quot;-&gt;blackwill1]]</tw-passagedata><tw-passagedata pid="9" name="radio room" tags="" position="367.66666666666674,92.66666666666669" size="100,100">Your trek to the second floor brings you past the empty undergraduate lounge, and you pause outside the open door at the sound of a [[radio-&gt;radio]] within. </tw-passagedata><tw-passagedata pid="10" name="enter waiting room" tags="" position="367.66666666666674,374.3333333333333" size="100,100">Continuing up the stairs, you find Dr. Blackwill’s office guarded by a stately waiting room. The door is closed, muffled conversation leaking through. 
+
+You decide to wait for it to finish, turning to [[inspect the room.-&gt;waiting room 1]]</tw-passagedata><tw-passagedata pid="11" name="blackwill1" tags="" position="361,1586" size="100,100">&quot;To be blunt, Miss Reid, our guest will be needing moment-to-moment transcription support due to his size. You will be posted with your typewriter in his office and will accompany him around campus.&quot;
+
+&quot;I-- I see.” Your heart accelerates, and you stare blankly into your lap, squeezing the fabric of your skirt. A grounding question. “When will this all be happening?&quot;
+
+&quot;The gentleman arrived yesterday and has been settling in. His residency will last the summer. Starting now, you report to me, and your duties begin tomorrow.” 
+
+You’re suffused with another wash of panic. *So soon! Why? Why me?* Before you can think to stop yourself, [[you’re asking.-&gt;blackwill2]]</tw-passagedata><tw-passagedata pid="12" name="blackwill2" tags="" position="361,1736" size="100,100">&quot;Why me? If-- if I may be so bold to ask, that is, sir. Why was I chosen?&quot;
+
+“Mrs. Sheffield recommended you,” he responds. “You’d have to ask her why.” 
+
+You don’t need to ask. You know where you stand among the typewriter girls.
+
+“I see, thank you.”
+
+“Right, then. As I said, the Northerner begins work tomorrow, so you should spend the rest of the day preparing. They’ve built an office for him on the North edge of campus, past the gardens. It’s impossible to miss. Here’s the key.”
+
+[[&quot;Is there anything else you can tell me about him?”-&gt;blackwill3]]</tw-passagedata><tw-passagedata pid="13" name="blackwill3" tags="" position="361,1886" size="100,100">“Oh, I suppose I ought to give you his name. Doctor Mattias Sjöberg. He’s an algebraic number theorist. I can’t tell you much else, I’m afraid.”
+
+That means nothing to you, but your imagination is more than happy to fill the gaps of his description with a hulking brute. You squeeze your eyes shut and force the picture from your head before speaking.
+
+“Thank you, sir.” You rise to your feet, white knuckles still buried in your skirt. “If that is all?”
+
+Dr. Blackwill nods absently, already turning his attention to the papers on his desk, and you depart. [[You suppose you should ferry your materials to your new office.-&gt;WIP]]</tw-passagedata><tw-passagedata pid="14" name="WIP" tags="" position="1140.6666666666667,86.33333333333331" size="100,100">#### This story is a work in progress!
+
+Check out (link:&quot;thundering-susurrus&quot;)[(gotoURL:&quot;https://thundering-susurrus.tumblr.com/&quot;)] on Tumblr for updates.</tw-passagedata><tw-passagedata pid="15" name="back to pool" tags="" position="361,2036" size="100,100">Double-click this passage to edit it.</tw-passagedata><tw-passagedata pid="16" name="radio" tags="" position="369.3333333333335,234.33333333333337" size="100,100">If you strain your ears, you can catch the lilting tone of the Northern (link-reveal:&quot;language&quot;)[(show: ?language)], signal staticky from its long journey through The Ring. 
+
+|language)[Quite a bit of progress has been made on translation since Southern radios first began picking up the foreign waves several years ago.  (link-reveal:&quot;Linguistics departments&quot;)[(show: ?departments)] around the hemisphere have been hotbeds of activity ever since that first contact.]
+
+|departments)[Of course, Oxhome&#39;s own was no exception. One of the girls working there had bragged to you about how her department was making &quot;important contributions to mutual understanding,&quot; which was rich considering that neither of you can speak a lick of (link-reveal:&quot;Northern&quot;)[(show: ?Northern)].]
+
+|Northern)[You turn your attention back to the audio. It sounds a little funny: sing-songy, full of nasal vowels and unfamiliar consonants.
+
+[[You shouldn’t tarry here.-&gt;enter waiting room]]]</tw-passagedata><tw-passagedata pid="17" name="typewriting" tags="" position="111.66666666666669,375.8333333333334" size="100,100">&lt;img src=&quot;https://i.imgur.com/6gnNZE4.png&quot; width=100%&quot;&gt; |hide)[this is only here so the link will appear [[Start]]]
+&lt;p id=&quot;demo&quot;&gt;&lt;/p&gt; &lt;script&gt;window.typeWriter();&lt;/script&gt;
+</tw-passagedata><tw-passagedata pid="18" name="Title page" tags="" position="110.00000000000011,67.50000000000003" size="100,100"># Oxhome
+An interactive G/t story by (link:&quot;thundering-susurrus&quot;)[(gotoURL:&quot;https://thundering-susurrus.tumblr.com/&quot;)]
+
+[[Start reading-&gt;chapter1]]</tw-passagedata><tw-passagedata pid="19" name="contentwarning" tags="" position="1321.666666666667,89.16666666666664" size="100,100">How do you feel about ?
+I don&#39;t want to see it.(set: $ to false)
+I don&#39;t want to see it.(set: $ to false)
+</tw-passagedata><tw-passagedata pid="20" name="chapter1" tags="" position="110,211.66666666666674" size="100,100">##Monday, September 22, 1913
+[[typewriting&lt;-morning]]</tw-passagedata><tw-passagedata pid="21" name="blackwellDescription" tags="" position="28.33333333333323,711.0000000000001" size="100,100">Though you&#39;re employed as a general typist, you&#39;re informally assigned to the mathematics department, handling most of their transcription requests. Most of the girls specialize like this; becoming familiar with the vocabulary of an area, even if only in spelling, does wonders for both speed and accuracy of transcription. Words like &quot;combinatorial&quot; and &quot;surjection&quot; are burned into the nerves of your hands, though you couldn&#39;t possibly guess what they mean. And, of course, it has helped to become acquainted with the style of penmanship of the individual faculty. After the past few years, you&#39;d swear you could write a letter indistinguishable from one by Dr. Chapman, the most prolific in the department.
+
+This relationship only goes as deep as handwriting, however. Campus couriers handle the delivery of manuscripts, so your knowledge of these men stops with the quality of their descenders and the tone of their prose. Dr. Symon is a patient and compassionate correspondent, but his handwriting is ambiguous at best, with scrawled letterforms that seem unwilling to commit to an identity. Dr. Evans&#39;s hand is precise and hardly needs transcribing; his words are just as exacting. Dr. Chapman is an effusive writer, smudged ink and forward slant belying his enthusiasm.
+
+When you had first begun your post, Ms. Sheffield tasked you with learning the name and position of all tenured faculty, so that you would not err in spelling their names, and so that you would assign the proper importance to their correspondence. You type slowly and carefully when a document comes from Dr. Blackwell. As chair of the department, his writing is frequently less technical than that of his colleagues, but his status demands extra deliberation. It would not do to irritate such an important man.</tw-passagedata><tw-passagedata pid="22" name="toBlackwell" tags="" position="119.99999999999989,844.3333333333335" size="100,100">The typing pool sits in the basement of Radcliffe Hall, located on the southern edge of campus. The aging building used to house the classicists, who departed the leaking building for greener pastures some years ago. Radcliffe now houses much of the clerical staff supporting Oxhome, with the women sequestered on the bottom floor. 
+
+Despite its position on the outskirts, Radcliffe Hall isn&#39;t really far from anywhere; Oxhome is a dense place, and the department of mathematics is only a fifteen minutes walk away. 
+
+You don&#39;t need to ask for Dr. Blackwill&#39;s address; dozens of missives have impressed it indelibly in your mind: [[Blair Hall, room 203.-&gt;radio room]]</tw-passagedata></tw-storydata>
