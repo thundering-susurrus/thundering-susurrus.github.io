@@ -1,82 +1,83 @@
-var shittyJson = `
-{
-	"base_height": 72.0,
-	"dimensions" : [
-		{
-			"name": "foot",
-			"size": 10.0
-		},
-		{
-			"name": "hand",
-			"size": 8.0
-		},
-		{
-			"name": "calf",
-			"size": 21.0
-		},
-		{
-			"name": "shoulders",
-			"size": 18.0
-		},
-		{
-			"name": "head",
-			"size": 9.0
-		}
-	]
-}
-`;
-var myData = JSON.parse(shittyJson);
-
 function computeWeight() {
-	var humanWeight = parseInt($("#lbs_input").val());
-	var humanHeight = heightAsFeet(parseInt($("#human_ft_input").val()), parseInt($("#human_in_input").val()));
-	var giantHeight = heightAsFeet(parseInt($("#giant_ft_input").val()), parseInt($("#giant_in_input").val()));
-	var heightRatio = giantHeight/humanHeight;
+	let humanWeight = parseInt($("#lbs_input").val());
+	let humanHeight = toInches(parseInt($("#human_ft_input").val()), parseInt($("#human_in_input").val()));
+	let giantHeight = toInches(parseInt($("#giant_ft_input").val()), parseInt($("#giant_in_input").val()));
+	let heightRatio = giantHeight / humanHeight;
 	return humanWeight * (heightRatio ** 3);
 }
 
 function computeLength(baseLength, baseHeight, giantHeight) {
-	var heightRatio = giantHeight/baseHeight;
-	return baseLength*heightRatio;
+	let heightRatio = giantHeight / baseHeight;
+	return baseLength * heightRatio;
 }
 
-function heightAsFeet(feet, inches) {
-	return feet + inches / 12.0
+function formatInches(x) {
+	let feet = Math.floor(x / 12)
+	let inches = (x % 12).toFixed(2).replace(/\.?0*$/, "")
+	let finalString = ""
+	if (feet != 0) {
+		finalString += feet + " ft"
+	}
+	if ((inches != "0") && (feet != 0)) {
+		finalString += " "
+	}
+	if (inches != "0") {
+		finalString += inches + " in"
+	}
+	return finalString
 }
 
 function formatInt(x) {
 	return Math.round(x)
 }
 
-function buildDimensions() {
-	var dimensions = myData['dimensions']
-	for (dimension of dimensions) {
-		var name = dimension['name']
-		var size = dimension['size']
-		var input_id = 'body_part_'+name+"_input"
-		var htmlString = "<p>"+name+"</p><p><input type=\"text\" disabled=\"disabled\" id=\""+input_id+"\" + value=\""+size+"\"></input><label>"+"ft"+"</label></p>"
-		$("#parts_div").append(htmlString)
-	}
+function partToId(body_part) {
+	let formatted_part = body_part.replace(" ", "_")
+	return "body_part_" + formatted_part + "_elt"
 }
 
-function updateDimensions() {
-	var giantHeight = heightAsFeet(parseInt($("#giant_ft_input").val()), parseInt($("#giant_in_input").val()));
-	var giantWeight = computeWeight()
+function toInches(feet, inches) {
+	return 12.0 * feet + inches
+}
+
+function buildDimensions(myData) {
+	let dimensions = myData['dimensions']
+	for (dimension of dimensions) {
+		let name = dimension['name']
+		let size = formatInches(dimension['size'])
+		let input_id = partToId(name)
+		let htmlString = '<tr><td>' + name + '</td><td id=\"' + input_id + '\">' + size + '</td></tr>'
+		$("#body_parts_table").append(htmlString)
+	}
+	updateDimensions(myData)
+}
+
+function updateDimensions(myData) {
+	let giantHeight = toInches(parseInt($("#giant_ft_input").val()), parseInt($("#giant_in_input").val()));
+	let giantWeight = computeWeight()
 	$("#giant_lbs").val(formatInt(giantWeight))
 
-	var dimensions = myData['dimensions']
-	var baseHeight = myData['base_height']
+	let dimensions = myData['dimensions']
+	let baseHeight = myData['base_height']
 	for (dimension of dimensions) {
-		var name = dimension['name']
-		var baseLength = dimension['size']
-		var newLength = computeLength(baseLength, baseHeight, giantHeight)
-		newLength = formatInt(newLength)
-		var input_id = 'body_part_'+name+"_input"
-		$("#"+input_id).attr("value", newLength)
+		let name = dimension['name']
+		let baseLength = dimension['size']
+		let newLength = computeLength(baseLength, baseHeight, giantHeight)
+		newLength = formatInches(newLength)
+		let input_id = partToId(name)
+		$("#" + input_id).text(newLength)
 	}
 }
 
+// Runs on start
 $(document).ready(function() {
+	$.getJSON("data.json", buildDimensions).done(
+		function(myData) {
+			$("input").change(function() {
+				updateDimensions(myData)
+			});
+		}
+	)
 	// prevent non-numeric entry
 	$("input").keypress(function(e) {
 		if (
@@ -85,11 +86,5 @@ $(document).ready(function() {
 		) {
 			e.preventDefault();
 		}
-	});
-
-	$("input").change(function() {
-		updateDimensions()
-	});
-
-	buildDimensions()
+	})
 })

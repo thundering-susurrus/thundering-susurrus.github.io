@@ -1,0 +1,59 @@
+{
+	"base_height": 72.0,
+	"dimensions" : [
+		{
+			"name": "foot",
+			"size": 10.0
+		},
+		{
+			"name": "hand",
+			"size": 8.0
+		},
+		{
+			"name": "wrist",
+			"size": 2.75
+		},
+		{
+			"name": "knee",
+			"size": 4.5
+		},
+		{
+			"name": "forearm",
+			"size": 10.0
+		},
+		{
+			"name": "upper arm",
+			"size": 12.0
+		},
+		{
+			"name": "calf",
+			"size": 21.0
+		},
+		{
+			"name": "shoulders",
+			"size": 18.0
+		},
+		{
+			"name": "head",
+			"size": 9.0
+		},
+		{
+			"name": "face",
+			"size": 8.0
+		},
+		{
+			"name": "waist",
+			"size": 10.0
+		},
+		{
+			"name": "chest",
+			"size": 13.0
+		}
+	],
+	"distance_above_ground": [
+		{
+			"name": "chin",
+			"size": 8.0
+		}
+	]
+}
