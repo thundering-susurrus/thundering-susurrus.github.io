@@ -31,8 +31,14 @@ function formatInt(x) {
 	return Math.round(x)
 }
 
-function partToId(body_part) {
-	let formatted_part = body_part.replace(" ", "_")
+function partToId(dimension) {
+	let formatted_part;
+	if ("id" in dimension) {
+		formatted_part = dimension['id']
+	}
+	else {
+		formatted_part = dimension['name'].replace(" ", "_")
+	}
 	return "body_part_" + formatted_part + "_elt"
 }
 
@@ -41,13 +47,20 @@ function toInches(feet, inches) {
 }
 
 function buildDimensions(myData) {
-	let dimensions = myData['dimensions']
-	for (dimension of dimensions) {
-		let name = dimension['name']
-		let size = formatInches(dimension['size'])
-		let input_id = partToId(name)
-		let htmlString = '<tr><td>' + name + '</td><td id=\"' + input_id + '\">' + size + '</td></tr>'
-		$("#body_parts_table").append(htmlString)
+	let table_data_pairs = [
+		[myData['dimensions'], '#body_parts_table'],
+		[myData['face_dimensions'], '#facial_features_table']
+	]
+	for (pair of table_data_pairs) {
+		let dimensions, table;
+		[dimensions, table] = pair;
+		for (dimension of dimensions) {
+			let name = dimension['name']
+			let size = formatInches(dimension['size'])
+			let input_id = partToId(dimension)
+			let htmlString = '<tr><td>' + name + '</td><td id=\"' + input_id + '\">' + size + '</td></tr>'
+			$(table).append(htmlString)
+		}
 	}
 	updateDimensions(myData)
 }
@@ -57,15 +70,18 @@ function updateDimensions(myData) {
 	let giantWeight = computeWeight()
 	$("#giant_lbs").val(formatInt(giantWeight))
 
-	let dimensions = myData['dimensions']
+	let dimensions_sets = [myData['dimensions'], myData['face_dimensions']]
 	let baseHeight = myData['base_height']
-	for (dimension of dimensions) {
-		let name = dimension['name']
-		let baseLength = dimension['size']
-		let newLength = computeLength(baseLength, baseHeight, giantHeight)
-		newLength = formatInches(newLength)
-		let input_id = partToId(name)
-		$("#" + input_id).text(newLength)
+
+	for (dimension_set of dimensions_sets) {
+		for (dimension of dimension_set) {
+			let name = dimension['name']
+			let baseLength = dimension['size']
+			let newLength = computeLength(baseLength, baseHeight, giantHeight)
+			newLength = formatInches(newLength)
+			let input_id = partToId(dimension)
+			$("#" + input_id).text(newLength)
+		}
 	}
 }
 
@@ -87,4 +103,14 @@ $(document).ready(function() {
 			e.preventDefault();
 		}
 	})
+
+	// instructions
+	$('[data-toggle="collapse"]').click(function() {
+		$(this).toggleClass("active");
+		if ($(this).hasClass("active")) {
+			$(this).text("Hide Instructions");
+		} else {
+			$(this).text("Show Instructions");
+		}
+	});
 })

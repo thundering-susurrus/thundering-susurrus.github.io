@@ -50,10 +50,102 @@
 			"size": 13.0
 		}
 	],
-	"distance_above_ground": [
+	"face_dimensions": [
 		{
-			"name": "chin",
+			"name": "head (height)",
+			"id": "head_height",
+			"size": 9.0
+		},
+		{
+			"name": "skull (width)",
+			"id": "skull_width",
+			"size": 6.0
+		},
+		{
+			"name": "face (height)",
+			"id": "face_height",
 			"size": 8.0
+		},
+		{
+			"name": "face (width)",
+			"id": "face_width",
+			"size": 5.25
+		},
+		{
+			"name": "neck (width)",
+			"id": "neck_width",
+			"size": 4.5
+		},
+		{
+			"name": "chin to suprasternal notch",
+			"id": "suprasternal",
+			"size": 4.5
+		},
+		{
+			"name": "nose (height)",
+			"id": "nose_height",
+			"size": 2.5
+		},
+		{
+			"name": "chin to nose",
+			"id": "chin_nose",
+			"size": 2.5
+		},
+		{
+			"name": "mouth (width)",
+			"id": "mouth_width",
+			"size": 2.0
+		},
+		{
+			"name": "eye (width)",
+			"id": "eye_width",
+			"size": 1.333
+		},
+		{
+			"name": "nose (widest point)",
+			"id": "nose_width",
+			"size": 1.5
+		},
+		{
+			"name": "nose to lips",
+			"id": "philtrum_height",
+			"size": 0.875
+		},
+		{
+			"name": "chin to pupil",
+			"id": "chin_pupil",
+			"size": 4.5
+		},
+		{
+			"name": "pupil to top of head",
+			"id": "pupil_top",
+			"size": 4.5
+		},
+		{
+			"name": "forehead",
+			"size": 2.5
+		},
+		{
+			"name": "hairline to top of head",
+			"id": "hairline",
+			"size": 2.5
+		},
+		{
+			"name": "temple to temple",
+			"id": "temple",
+			"size": 2.5
+		},
+		{
+			"name": "lips to chin crease",
+			"id": "muzzle2",
+			"size": 0.625
+		},
+		{
+			"name": "chin crease to chin base",
+			"id": "muzzle3",
+			"size": 1
 		}
+	],
+	"hand_dimensions": [
 	]
 }
