@@ -49,7 +49,8 @@ function toInches(feet, inches) {
 function buildDimensions(myData) {
 	let table_data_pairs = [
 		[myData['dimensions'], '#body_parts_table'],
-		[myData['face_dimensions'], '#facial_features_table']
+		[myData['face_dimensions'], '#facial_features_table'],
+		[myData['hand_dimensions'], '#hand_features_table']
 	]
 	for (pair of table_data_pairs) {
 		let dimensions, table;
@@ -70,7 +71,7 @@ function updateDimensions(myData) {
 	let giantWeight = computeWeight()
 	$("#giant_lbs").val(formatInt(giantWeight))
 
-	let dimensions_sets = [myData['dimensions'], myData['face_dimensions']]
+	let dimensions_sets = [myData['dimensions'], myData['face_dimensions'], myData['hand_dimensions']]
 	let baseHeight = myData['base_height']
 
 	for (dimension_set of dimensions_sets) {
@@ -103,14 +104,4 @@ $(document).ready(function() {
 			e.preventDefault();
 		}
 	})
-
-	// instructions
-	$('[data-toggle="collapse"]').click(function() {
-		$(this).toggleClass("active");
-		if ($(this).hasClass("active")) {
-			$(this).text("Hide Instructions");
-		} else {
-			$(this).text("Show Instructions");
-		}
-	});
 })

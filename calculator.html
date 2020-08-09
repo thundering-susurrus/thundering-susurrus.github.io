@@ -18,131 +18,148 @@
   </head>
   <body>
     <div id="wrapper">
-    <header>
-      <nav class="navbar navbar-expand-md navbar-dark bg-primary mb-4">
-        <a class="navbar-brand">Giant proportion calculator</a>
-      </nav>
-    </header>
-    <main role="main" class="flex-shrink-0">
-      <div class="container">
-        <div class="container m-3">
-          <h4>About</h4>
-          <p>
-            This is a tool for calculating the proportions of a giant of a given size. Note that all measurements are based on an idealized Caucasian male. This site is a work in progress!
-          </p>
-          <h4>Instructions</h4>
-          <ol>
-            <li>Input the height and weight your giant would be if they were a human.</li>
-            <li>Input the actual height of your giant.</li>
-            <li>The giant's computed weight will be displayed.</li>
-            <li>Click between the tabs below to see sizes for specific body parts.</li>
-          </ol>
-          <div class="row">
-            <div class="col-sm">
-              <h4>Human dimensions</h4>
-              <p>
-                <input type="text" id="human_ft_input" value="6" />
-                <label for="human_ft_input">ft</label>
-              </p>
-              <p>
-                <input type="text" id="human_in_input" value="0" />
-                <label for="in_input">in</label>
-              </p>
-              <p>
-                <input type="text" id="lbs_input" value="200" />
-                <label for="lbs_input">lbs</label>
-              </p>
-            </div>
-            <div class="col-sm">
-              <h4>Giant dimensions</h4>
-              <p>
-                <input type="text" id="giant_ft_input" value="60" />
-                <label for="ft_input">ft</label>
-              </p>
-              <p>
-                <input type="text" id="giant_in_input" value="0" />
-                <label for="in_input">in</label>
-              </p>
-              <p>
-                <input type="text" disabled="disabled" id="giant_lbs" value="200000"/>
-                <label for="giant_lbs">lbs</label>
-              </p>
+      <header>
+        <nav class="navbar navbar-expand-md navbar-dark bg-primary mb-4">
+          <a class="navbar-brand">Giant proportion calculator</a>
+        </nav>
+      </header>
+      <main role="main" class="flex-shrink-0">
+        <div class="container">
+          <div class="container m-3">
+            <h4>About</h4>
+            <p>
+              This is a tool for calculating the proportions of a giant of a given size. Note that all measurements are based on an idealized Caucasian male. This site is a work in progress! Please submit feedback to <a href="https://thundering-susurrus.tumblr.com/ask">thundering-susurrus</a>.
+            </p>
+            <h4>Instructions</h4>
+            <ol>
+              <li>Input the height and weight your giant would be if they were a human.</li>
+              <li>Input the actual height of your giant.</li>
+              <li>The giant's computed weight will be displayed.</li>
+              <li>Click between the tabs below to see sizes for specific body parts.</li>
+            </ol>
+            <div class="row">
+              <div class="col-sm">
+                <h4>Human dimensions</h4>
+                <p>
+                  <input type="text" id="human_ft_input" value="6" />
+                  <label for="human_ft_input">ft</label>
+                </p>
+                <p>
+                  <input type="text" id="human_in_input" value="0" />
+                  <label for="in_input">in</label>
+                </p>
+                <p>
+                  <input type="text" id="lbs_input" value="200" />
+                  <label for="lbs_input">lbs</label>
+                </p>
+              </div>
+              <div class="col-sm">
+                <h4>Giant dimensions</h4>
+                <p>
+                  <input type="text" id="giant_ft_input" value="60" />
+                  <label for="ft_input">ft</label>
+                </p>
+                <p>
+                  <input type="text" id="giant_in_input" value="0" />
+                  <label for="in_input">in</label>
+                </p>
+                <p>
+                  <input type="text" disabled="disabled" id="giant_lbs" value="200000"/>
+                  <label for="giant_lbs">lbs</label>
+                </p>
+              </div>
             </div>
           </div>
-        </div>
-        <div class="container m-3">
-          <div class="row">
-            <div class="col-sm">
-              <div class="bs-component">
-                <ul class="nav nav-tabs">
-                  <li class="nav-item">
-                    <a class="nav-link active" data-toggle="tab" href="#facial_features">Facial Features</a>
-                  </li>
-                  <li class="nav-item">
-                    <a class="nav-link" data-toggle="tab" href="#lengths">General</a>
-                  </li>
-                  <li class="nav-item">
-                    <a class="nav-link" data-toggle="tab" href="#hand_dimensions">Hand</a>
-                  </li>
-                </ul>
-                <div id="myTabContent" class="tab-content">
-                  <div class="tab-pane fade" id="lengths">
-                    <div class="row">
-                      <div class="col-sm tableFixHead">
-                        <table class="table table-hover" style="table-layout:fixed;">
-                          <thead>
-                            <tr>
-                              <th>body part</th>
-                              <th>size</th>
-                            </tr>
-                          </thead>
-                          <tbody id="body_parts_table" >
-                          </tbody>
-                        </table>
-                      </div>
-                      <div class="col-sm">
-                        <img src="calculator/male.png" class="d-block mx-auto" alt="a drawing of a man with various proportions labelled">
-                      </div>
-                    </div>
-                  </div>
-                  <div class="tab-pane fade active show" id="facial_features">
-                    <div class="row">
-                      <div class="col-sm tableFixHead">
-                        <table class="table table-hover" style="table-layout:fixed;">
-                          <thead>
-                            <tr>
-                              <th>body part</th>
-                              <th>size</th>
-                            </tr>
-                          </thead>
-                          <tbody id="facial_features_table" >
-                          </tbody>
-                        </table>
-                      </div>
-                      <div class="col-sm">
-                        <img src="calculator/male_face.png" class="d-block mx-auto" alt="a drawing of a man's face with various proportions labeled">
+          <div class="container m-3">
+            <div class="row">
+              <div class="col-sm">
+                <div class="bs-component">
+                  <ul class="nav nav-tabs">
+                    <li class="nav-item">
+                      <a class="nav-link active" data-toggle="tab" href="#facial_features">Facial Features</a>
+                    </li>
+                    <li class="nav-item">
+                      <a class="nav-link" data-toggle="tab" href="#lengths">General</a>
+                    </li>
+                    <li class="nav-item">
+                      <a class="nav-link" data-toggle="tab" href="#hand_dimensions">Hand</a>
+                    </li>
+                  </ul>
+                  <div id="myTabContent" class="tab-content">
+                    <div class="tab-pane fade" id="lengths">
+                      <div class="row">
+                        <div class="col-sm tableFixHead">
+                          <table class="table table-hover" style="table-layout:fixed;">
+                            <thead>
+                              <tr>
+                                <th>body part</th>
+                                <th>size</th>
+                              </tr>
+                            </thead>
+                            <tbody id="body_parts_table" >
+                            </tbody>
+                          </table>
+                        </div>
+                        <div class="col-sm">
+                          <img src="calculator/male.png" class="d-block mx-auto" alt="a drawing of a man with various proportions labelled">
+                        </div>
                       </div>
                     </div>
-                  </div>
-                  <div class="tab-pane fade" id="hand_dimensions">
-                    <p>Under construction!</p>
+                    <div class="tab-pane fade active show" id="facial_features">
+                      <div class="row">
+                        <div class="col-sm tableFixHead">
+                          <table class="table table-hover" style="table-layout:fixed;">
+                            <thead>
+                              <tr>
+                                <th>body part</th>
+                                <th>size</th>
+                              </tr>
+                            </thead>
+                            <tbody id="facial_features_table" >
+                            </tbody>
+                          </table>
+                        </div>
+                        <div class="col-sm">
+                          <img src="calculator/male_face.png" class="d-block mx-auto" alt="a drawing of a man's face with various proportions labeled">
+                        </div>
+                      </div>
+                    </div>
+                    <div class="tab-pane fade" id="hand_dimensions">
+                      <div class="row">
+                        <div class="col-sm tableFixHead">
+                          <table class="table table-hover" style="table-layout:fixed;">
+                            <thead>
+                              <tr>
+                                <th>body part</th>
+                                <th>size</th>
+                              </tr>
+                            </thead>
+                            <tbody id="hand_features_table" >
+                              Under construction!
+                            </tbody>
+                          </table>
+                        </div>
+                        <div class="col-sm">
+                          <img src="calculator/vectorized_hand.png" class="d-block mx-auto" alt="a diagram of a hand with various proportions labeled">
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
           </div>
+          </br>
+          <div class="container m-3">
+            <p><small>Illustrations and measurements taken from <i>Human Proportions for Artists</i> by Avard T. Fairbanks and Eugene F. Fairbanks and reproduced under the <a href="https://creativecommons.org/licenses/by-sa/4.0/deed.en">Creative Commons Attribution-Share Alike 4.0 International license</a>. This page adheres to the same license.</small></p>
+          </div>
         </div>
-        </br>
-        <div class="container m-3">
-          <p><small>Illustrations and measurements taken from <i>Human Proportions for Artists</i> by Avard T. Fairbanks and Eugene F. Fairbanks and reproduced under the <a href="https://creativecommons.org/licenses/by-sa/4.0/deed.en">Creative Commons Attribution-Share Alike 4.0 International license</a>. This page adheres to the same license.</small></p>
+      </main>
+      <footer class="footer">
+        <div class="container">
+          <span class="text-muted">made with ♥ by <a href="https://thundering-susurrus.tumblr.com/">thundering-susurrus</a></span>
         </div>
-      </div>
-    </main>
-    <footer class="footer">
-      <div class="container">
-        <span class="text-muted">made with ♥ by <a href="https://thundering-susurrus.tumblr.com/">thundering-susurrus</a></span>
-      </div>
-    </footer>
-  </div>
+      </footer>
+    </div>
   </body>
 </html>
