@@ -9,7 +9,6 @@
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.1/js/bootstrap.min.js" integrity="sha384-XEerZL0cuoUbHE4nZReLT7nx9gQrQreJekYhJD9WNWhH8nEW+0c5qq7aIo2Wl30J" crossorigin="anonymous"></script>
     <link rel="stylesheet" type="text/css" href="calculator/bootstrap.min.css">
     <link rel="stylesheet" type="text/css" href="calculator/calculator.css">
-    <!-- <script src="https://unpkg.com/autonumeric@4.6.0/dist/autoNumeric.min.js"></script>  -->
     <script src="calculator.js"></script>
     <title>G/t calculator</title>
     <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
@@ -18,8 +17,9 @@
     <link rel="manifest" href="site.webmanifest">
   </head>
   <body>
+    <div id="wrapper">
     <header>
-      <nav class="navbar navbar-expand-md navbar-dark bg-dark mb-4">
+      <nav class="navbar navbar-expand-md navbar-dark bg-primary mb-4">
         <a class="navbar-brand">Giant proportion calculator</a>
       </nav>
     </header>
@@ -32,9 +32,9 @@
           </p>
           <h4>Instructions</h4>
           <ol>
-            <li>Input how tall your giant would be if they were a human.</li>
+            <li>Input the height and weight your giant would be if they were a human.</li>
             <li>Input the actual height of your giant.</li>
-            <li>The giant's weight will be displayed.</li>
+            <li>The giant's computed weight will be displayed.</li>
             <li>Click between the tabs below to see sizes for specific body parts.</li>
           </ol>
           <div class="row">
@@ -140,8 +140,9 @@
     </main>
     <footer class="footer">
       <div class="container">
-        <span class="text-muted">made with ♥ by <a href="https://thundering-susurrus.tumblr.com/">thundering-susurrus</a><span>
+        <span class="text-muted">made with ♥ by <a href="https://thundering-susurrus.tumblr.com/">thundering-susurrus</a></span>
       </div>
     </footer>
+  </div>
   </body>
 </html>
