@@ -1,151 +1,211 @@
 {
-	"base_height": 72.0,
-	"dimensions" : [
-		{
-			"name": "foot",
-			"size": 10.0
-		},
-		{
-			"name": "hand",
-			"size": 8.0
-		},
-		{
-			"name": "wrist",
-			"size": 2.75
-		},
-		{
-			"name": "knee",
-			"size": 4.5
-		},
-		{
-			"name": "forearm",
-			"size": 10.0
-		},
-		{
-			"name": "upper arm",
-			"size": 12.0
-		},
-		{
-			"name": "calf",
-			"size": 21.0
-		},
-		{
-			"name": "shoulders",
-			"size": 18.0
-		},
-		{
-			"name": "head",
-			"size": 9.0
-		},
-		{
-			"name": "face",
-			"size": 8.0
-		},
-		{
-			"name": "waist",
-			"size": 10.0
-		},
-		{
-			"name": "chest",
-			"size": 13.0
-		}
-	],
-	"face_dimensions": [
-		{
-			"name": "head (height)",
-			"id": "head_height",
-			"size": 9.0
-		},
-		{
-			"name": "skull (width)",
-			"id": "skull_width",
-			"size": 6.0
-		},
-		{
-			"name": "face (height)",
-			"id": "face_height",
-			"size": 8.0
-		},
-		{
-			"name": "face (width)",
-			"id": "face_width",
-			"size": 5.25
-		},
-		{
-			"name": "neck (width)",
-			"id": "neck_width",
-			"size": 4.5
-		},
-		{
-			"name": "chin to suprasternal notch",
-			"id": "suprasternal",
-			"size": 4.5
-		},
-		{
-			"name": "nose (height)",
-			"id": "nose_height",
-			"size": 2.5
-		},
-		{
-			"name": "chin to nose",
-			"id": "chin_nose",
-			"size": 2.5
-		},
-		{
-			"name": "mouth (width)",
-			"id": "mouth_width",
-			"size": 2.0
-		},
-		{
-			"name": "eye (width)",
-			"id": "eye_width",
-			"size": 1.333
-		},
-		{
-			"name": "nose (widest point)",
-			"id": "nose_width",
-			"size": 1.5
-		},
-		{
-			"name": "nose to lips",
-			"id": "philtrum_height",
-			"size": 0.875
-		},
-		{
-			"name": "chin to pupil",
-			"id": "chin_pupil",
-			"size": 4.5
-		},
-		{
-			"name": "pupil to top of head",
-			"id": "pupil_top",
-			"size": 4.5
-		},
-		{
-			"name": "forehead",
-			"size": 2.5
-		},
-		{
-			"name": "hairline to top of head",
-			"id": "hairline",
-			"size": 2.5
-		},
-		{
-			"name": "temple to temple",
-			"id": "temple",
-			"size": 2.5
-		},
-		{
-			"name": "lips to chin crease",
-			"id": "muzzle2",
-			"size": 0.625
-		},
-		{
-			"name": "chin crease to chin base",
-			"id": "muzzle3",
-			"size": 1
-		}
-	],
-	"hand_dimensions": [
-	]
+  "base_height": 72.0,
+  "dimensions": [
+    {
+      "name": "foot",
+      "size": 10.0
+    },
+    {
+      "name": "hand",
+      "size": 8.0
+    },
+    {
+      "name": "wrist",
+      "size": 2.75
+    },
+    {
+      "name": "knee",
+      "size": 4.5
+    },
+    {
+      "name": "forearm",
+      "size": 10.0
+    },
+    {
+      "name": "upper arm",
+      "size": 12.0
+    },
+    {
+      "name": "calf",
+      "size": 21.0
+    },
+    {
+      "name": "shoulders",
+      "size": 18.0
+    },
+    {
+      "name": "head",
+      "size": 9.0
+    },
+    {
+      "name": "face",
+      "size": 8.0
+    },
+    {
+      "name": "waist",
+      "size": 10.0
+    },
+    {
+      "name": "chest",
+      "size": 13.0
+    }
+  ],
+  "face_dimensions": [
+    {
+      "name": "head (height)",
+      "id": "head_height",
+      "size": 9.0
+    },
+    {
+      "name": "skull (width)",
+      "id": "skull_width",
+      "size": 6.0
+    },
+    {
+      "name": "face (height)",
+      "id": "face_height",
+      "size": 8.0
+    },
+    {
+      "name": "face (width)",
+      "id": "face_width",
+      "size": 5.25
+    },
+    {
+      "name": "neck (width)",
+      "id": "neck_width",
+      "size": 4.5
+    },
+    {
+      "name": "chin to suprasternal notch",
+      "id": "suprasternal",
+      "size": 4.5
+    },
+    {
+      "name": "nose (height)",
+      "id": "nose_height",
+      "size": 2.5
+    },
+    {
+      "name": "chin to nose",
+      "id": "chin_nose",
+      "size": 2.5
+    },
+    {
+      "name": "mouth (width)",
+      "id": "mouth_width",
+      "size": 2.0
+    },
+    {
+      "name": "eye (width)",
+      "id": "eye_width",
+      "size": 1.333
+    },
+    {
+      "name": "nose (widest point)",
+      "id": "nose_width",
+      "size": 1.5
+    },
+    {
+      "name": "nose to lips",
+      "id": "philtrum_height",
+      "size": 0.875
+    },
+    {
+      "name": "chin to pupil",
+      "id": "chin_pupil",
+      "size": 4.5
+    },
+    {
+      "name": "pupil to top of head",
+      "id": "pupil_top",
+      "size": 4.5
+    },
+    {
+      "name": "forehead",
+      "size": 2.5
+    },
+    {
+      "name": "hairline to top of head",
+      "id": "hairline",
+      "size": 2.5
+    },
+    {
+      "name": "temple to temple",
+      "id": "temple",
+      "size": 2.5
+    },
+    {
+      "name": "lips to chin crease",
+      "id": "muzzle2",
+      "size": 0.625
+    },
+    {
+      "name": "chin crease to chin base",
+      "id": "muzzle3",
+      "size": 1
+    }
+  ],
+  "hand_dimensions": [
+    {
+      "name": "thumb (length)",
+      "id": "thumb_length",
+      "size": 2.761152416
+    },
+    {
+      "name": "index finger (length)",
+      "id": "index_length",
+      "size": 3.175650558
+    },
+    {
+      "name": "middle finger (length)",
+      "id": "middle_length",
+      "size": 3.457713755
+    },
+    {
+      "name": "ring finger (length)",
+      "id": "ring_length",
+      "size": 3.173791822
+    },
+    {
+      "name": "pinky (length)",
+      "id": "pinky_length",
+      "size": 2.582713755
+    },
+    {
+      "name": "thumb (width)",
+      "id": "thumb_width",
+      "size": 0.8197026022
+    },
+    {
+      "name": "middle finger (width)",
+      "id": "middle_width",
+      "size": 0.7746282528
+    },
+    {
+      "name": "hand (length)",
+      "id": "hand_length",
+      "size": 8.0
+    },
+    {
+      "name": "handbreadth across thumb",
+      "id": "handbreadth_thumb",
+      "size": 4.249535316
+    },
+    {
+      "name": "palm breadth",
+      "id": "palm_breadth",
+      "size": 3.534386617
+    },
+    {
+      "name": "handbreadth at metacarpals",
+      "id": "handbreadth_meta",
+      "size": 3.248605948
+    },
+    {
+      "name": "wrist (width)",
+      "id": "wrist_width",
+      "size": 2.316914498
+    }
+  ]
 }
