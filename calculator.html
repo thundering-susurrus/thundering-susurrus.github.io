@@ -39,124 +39,156 @@
             </ol>
             <hr>
             <div class="row">
-              <div class="col text-center">
+              <div class="col-md-4 text-center">
+                <h4>Units</h4>
+                <div class="form-group">
+                  <div class="custom-control custom-radio">
+                    <input type="radio" name="unitsRadio" class="custom-control-input" checked="" value="imperial" id="customRadio1">
+                    <label class="custom-control-label" for="customRadio1">imperial (ft/lbs)</label>
+                  </div>
+                  <div class="custom-control custom-radio">
+                    <input type="radio" name="unitsRadio" class="custom-control-input" value="metric" id="customRadio2">
+                    <label class="custom-control-label" for="customRadio2">metric (m/kg)</label>
+                  </div>
+                </div>
+              </div>
+              <div class="col-12 col-md-4 text-center">
                 <div>
                   <h4>Human dimensions</h4>
-                  <p>
+                  <p class="imperial">
                     <input type="text" id="human_ft_input" value="6" class="w-25"/>
                     <label for="human_ft_input">ft</label>
                     <input type="text" id="human_in_input" value="0" class="w-25"/>
                     <label for="in_input">in</label>
                   </p>
-                  <p>
+                  <p class="imperial">
                     <input type="text" id="lbs_input" value="200"/>
                     <label for="lbs_input">lbs</label>
                   </p>
+                  <p class="metric">
+                    <input type="text" id="human_m_input" value="1" class="w-25"/>
+                    <label for="human_m_input">m</label>
+                    <input type="text" id="human_cm_input" value="83" class="w-25"/>
+                    <label for="human_cm_input">cm</label>
+                  </p>
+                  <p class="metric">
+                    <input type="text" id="kgs_input" value="90"/>
+                    <label for="kgs_input">kgs</label>
+                  </p>
                 </div>
               </div>
-              <div class="col text-center">
+              <div class="col-12 col-md-4 text-center">
                 <div>
                   <h4>Giant dimensions</h4>
-                  <p>
+                  <p class="imperial">
                     <input type="text" id="giant_ft_input" value="60" class="w-25"/>
                     <label for="ft_input">ft</label>
                     <input type="text" id="giant_in_input" value="0" class="w-25"/>
                     <label for="in_input">in</label>
                   </p>
-                  <p>
+                  <p class="imperial">
                     <input type="text" disabled="disabled" id="giant_lbs" value="200000"/>
                     <label for="giant_lbs">lbs</label>
                   </p>
+                  <p class="metric">
+                    <input type="text" id="giant_m_input" value="18" class="w-25"/>
+                    <label for="giant_m_input">m</label>
+                    <input type="text" id="giant_cm_input" value="30" class="w-25"/>
+                    <label for="giant_cm_input">cm</label>
+                  </p>
+                  <p class="metric">
+                    <input type="text" disabled="disabled" id="giant_kgs" value="90000"/>
+                    <label for="giant_kgs">kg</label>
+                  </p>
+                </div>
+              </div>
+              <hr>
+            </div>
+            <div class="container">
+              <div class="bs-component">
+                <ul class="nav nav-tabs">
+                  <li class="nav-item">
+                    <a class="nav-link active" data-toggle="tab" href="#hand_dimensions">Hand</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" data-toggle="tab" href="#facial_features">Face</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" data-toggle="tab" href="#general_dimensions">Body</a>
+                  </li>
+                </ul>
+                <div id="myTabContent" class="tab-content">
+                  <div class="tab-pane fade" id="general_dimensions">
+                    <div class="row d-flex flex-wrap align-items-center">
+                      <div class="col-12 col-md-6 tableFixHead">
+                        <table class="table table-hover" style="table-layout:fixed;">
+                          <thead>
+                            <tr>
+                              <th>body part</th>
+                              <th>size</th>
+                            </tr>
+                          </thead>
+                          <tbody id="general_dimensions_table" >
+                          </tbody>
+                        </table>
+                      </div>
+                      <div class="col-12 col-md-6">
+                        <img src="calculator/male.png" class="d-block mx-auto img-fluid" alt="a drawing of a man with various proportions labelled">
+                      </div>
+                    </div>
+                  </div>
+                  <div class="tab-pane fade" id="facial_features">
+                    <div class="row d-flex flex-wrap align-items-center">
+                      <div class="col-12 col-md-6 tableFixHead">
+                        <table class="table table-hover" style="table-layout:fixed;">
+                          <thead>
+                            <tr>
+                              <th>body part</th>
+                              <th>size</th>
+                            </tr>
+                          </thead>
+                          <tbody id="facial_features_table" >
+                          </tbody>
+                        </table>
+                      </div>
+                      <div class="col-12 col-md-6">
+                        <img src="calculator/male_face.png" class="d-block mx-auto img-fluid" alt="a drawing of a man's face with various proportions labeled">
+                      </div>
+                    </div>
+                  </div>
+                  <div class="tab-pane fade active show" id="hand_dimensions">
+                    <div class="row d-flex flex-wrap align-items-center">
+                      <div class="col-12 col-md-6 tableFixHead">
+                        <table class="table table-hover" style="table-layout:fixed;">
+                          <thead>
+                            <tr>
+                              <th>body part</th>
+                              <th>size</th>
+                            </tr>
+                          </thead>
+                          <tbody id="hand_dimensions_table" >
+                          </tbody>
+                        </table>
+                      </div>
+                      <div class="col-12 col-md-6">
+                        <img src="calculator/vectorized_hand.png" class="d-block mx-auto img-fluid" alt="a diagram of a hand with various proportions labeled">
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
             <hr>
-          </div>
-          <div class="container">
-            <div class="bs-component">
-              <ul class="nav nav-tabs">
-                <li class="nav-item">
-                  <a class="nav-link active" data-toggle="tab" href="#hand_dimensions">Hand</a>
-                </li>
-                <li class="nav-item">
-                  <a class="nav-link" data-toggle="tab" href="#facial_features">Face</a>
-                </li>
-                <li class="nav-item">
-                  <a class="nav-link" data-toggle="tab" href="#lengths">Body</a>
-                </li>
-              </ul>
-              <div id="myTabContent" class="tab-content">
-                <div class="tab-pane fade" id="lengths">
-                  <div class="row d-flex flex-wrap align-items-center">
-                    <div class="col-12 col-md-6 tableFixHead">
-                      <table class="table table-hover" style="table-layout:fixed;">
-                        <thead>
-                          <tr>
-                            <th>body part</th>
-                            <th>size</th>
-                          </tr>
-                        </thead>
-                        <tbody id="body_parts_table" >
-                        </tbody>
-                      </table>
-                    </div>
-                    <div class="col-12 col-md-6">
-                      <img src="calculator/male.png" class="d-block mx-auto img-fluid" alt="a drawing of a man with various proportions labelled">
-                    </div>
-                  </div>
-                </div>
-                <div class="tab-pane fade" id="facial_features">
-                  <div class="row d-flex flex-wrap align-items-center">
-                    <div class="col-12 col-md-6 tableFixHead">
-                      <table class="table table-hover" style="table-layout:fixed;">
-                        <thead>
-                          <tr>
-                            <th>body part</th>
-                            <th>size</th>
-                          </tr>
-                        </thead>
-                        <tbody id="facial_features_table" >
-                        </tbody>
-                      </table>
-                    </div>
-                    <div class="col-12 col-md-6">
-                      <img src="calculator/male_face.png" class="d-block mx-auto img-fluid" alt="a drawing of a man's face with various proportions labeled">
-                    </div>
-                  </div>
-                </div>
-                <div class="tab-pane fade active show" id="hand_dimensions">
-                  <div class="row d-flex flex-wrap align-items-center">
-                    <div class="col-12 col-md-6 tableFixHead">
-                      <table class="table table-hover" style="table-layout:fixed;">
-                        <thead>
-                          <tr>
-                            <th>body part</th>
-                            <th>size</th>
-                          </tr>
-                        </thead>
-                        <tbody id="hand_features_table" >
-                        </tbody>
-                      </table>
-                    </div>
-                    <div class="col-12 col-md-6">
-                      <img src="calculator/vectorized_hand.png" class="d-block mx-auto img-fluid" alt="a diagram of a hand with various proportions labeled">
-                    </div>
-                  </div>
-                </div>
-              </div>
+            <div class="container text-justify">
+              <p><small>Illustrations and measurements taken from <i>Human Proportions for Artists</i> by Avard T. Fairbanks and Eugene F. Fairbanks and reproduced under the <a href="https://creativecommons.org/licenses/by-sa/4.0/deed.en">Creative Commons Attribution-Share Alike 4.0 International license</a>. This page adheres to the same license. Hand data adapted from <i><a href="https://www.researchgate.net/publication/264663607_A_Survey_of_Hand_Anthropometry_and_Biomechanical_Measurements_of_Dentistry_Students_in_Turkey">A Survey of Hand Anthropometry and Biomechanical Measurements of Dentistry Students in Turkey</a></i>.</small></p>
             </div>
           </div>
-          <hr>
-          <div class="container text-justify">
-            <p><small>Illustrations and measurements taken from <i>Human Proportions for Artists</i> by Avard T. Fairbanks and Eugene F. Fairbanks and reproduced under the <a href="https://creativecommons.org/licenses/by-sa/4.0/deed.en">Creative Commons Attribution-Share Alike 4.0 International license</a>. This page adheres to the same license. Hand data adapted from <i><a href="https://www.researchgate.net/publication/264663607_A_Survey_of_Hand_Anthropometry_and_Biomechanical_Measurements_of_Dentistry_Students_in_Turkey">A Survey of Hand Anthropometry and Biomechanical Measurements of Dentistry Students in Turkey</a></i>.</small></p>
+        </main>
+        <footer class="footer">
+          <div class="container">
+            <span class="text-muted">made with ♥ by <a href="https://thundering-susurrus.tumblr.com/">thundering-susurrus</a></span>
           </div>
-        </div>
-      </main>
-      <footer class="footer">
-        <div class="container">
-          <span class="text-muted">made with ♥ by <a href="https://thundering-susurrus.tumblr.com/">thundering-susurrus</a></span>
-        </div>
-      </footer>
-    </div>
-  </body>
-</html>
+        </footer>
+      </div>
+    </body>
+  </html>

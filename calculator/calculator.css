@@ -46,3 +46,7 @@ th     { background:#fff; }
 
 #wrapper {
 	overflow-x:hidden}
+
+.metric {
+	display: none;
+}

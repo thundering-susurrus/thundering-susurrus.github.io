@@ -1,9 +1,38 @@
-function computeWeight() {
-	let humanWeight = parseInt($("#lbs_input").val());
-	let humanHeight = toInches(parseInt($("#human_ft_input").val()), parseInt($("#human_in_input").val()));
-	let giantHeight = toInches(parseInt($("#giant_ft_input").val()), parseInt($("#giant_in_input").val()));
-	let heightRatio = giantHeight / humanHeight;
+function computeGiantWeight(useMetric) {
+	let humanHeight = getHumanHeight(useMetric)
+	let giantHeight = getGiantHeight(useMetric)
+	let heightRatio = giantHeight / humanHeight
+	let humanWeight
+	if (useMetric) {
+		humanWeight = parseFloat($("#kgs_input").val());
+	} else {
+		humanWeight = parseFloat($("#lbs_input").val());
+	}
 	return humanWeight * (heightRatio ** 3);
+}
+
+function getGiantHeight(useMetric) {
+	if (useMetric) {
+		return toCm(parseFloat($("#giant_m_input").val()), parseFloat($("#giant_cm_input").val()));
+	} else {
+		return toInches(parseFloat($("#giant_ft_input").val()), parseFloat($("#giant_in_input").val()));
+	}
+}
+
+function getHumanHeight(useMetric) {
+	if (useMetric) {
+		return toCm(parseFloat($("#human_m_input").val()), parseFloat($("#human_cm_input").val()));
+	} else {
+		return toInches(parseFloat($("#human_ft_input").val()), parseFloat($("#human_in_input").val()));
+	}
+}
+
+function toCm(meters, centimeters) {
+	return meters * 100.0 + centimeters
+}
+
+function toInches(feet, inches) {
+	return 12.0 * feet + inches
 }
 
 function computeLength(baseLength, baseHeight, giantHeight) {
@@ -27,6 +56,22 @@ function formatInches(x) {
 	return finalString
 }
 
+function formatCm(x) {
+	let meters = Math.floor(x / 100)
+	let centimeters = Math.round(x % 100).toString()
+	let finalString = ""
+	if (meters != 0) {
+		finalString += meters + " m"
+	}
+	if ((centimeters != "0") && (meters != 0)) {
+		finalString += " "
+	}
+	if (centimeters != "0") {
+		finalString += centimeters + " cm"
+	}
+	return finalString
+}
+
 function formatInt(x) {
 	return Math.round(x)
 }
@@ -35,51 +80,74 @@ function partToId(dimension) {
 	let formatted_part;
 	if ("id" in dimension) {
 		formatted_part = dimension['id']
-	}
-	else {
+	} else {
 		formatted_part = dimension['name'].replace(" ", "_")
 	}
 	return "body_part_" + formatted_part + "_elt"
 }
 
-function toInches(feet, inches) {
-	return 12.0 * feet + inches
-}
-
 function buildDimensions(myData) {
-	let table_data_pairs = [
-		[myData['dimensions'], '#body_parts_table'],
-		[myData['face_dimensions'], '#facial_features_table'],
-		[myData['hand_dimensions'], '#hand_features_table']
-	]
-	for (pair of table_data_pairs) {
-		let dimensions, table;
-		[dimensions, table] = pair;
+	// Run once on startup
+	for (const [table_name, dimensions] of Object.entries(myData['tables'])) {
 		for (dimension of dimensions) {
 			let name = dimension['name']
 			let size = formatInches(dimension['size'])
 			let input_id = partToId(dimension)
 			let htmlString = '<tr><td>' + name + '</td><td id=\"' + input_id + '\">' + size + '</td></tr>'
-			$(table).append(htmlString)
+			$("#" + table_name + "_table").append(htmlString)
 		}
 	}
+
 	updateDimensions(myData)
 }
 
-function updateDimensions(myData) {
-	let giantHeight = toInches(parseInt($("#giant_ft_input").val()), parseInt($("#giant_in_input").val()));
-	let giantWeight = computeWeight()
-	$("#giant_lbs").val(formatInt(giantWeight))
+function swapUnits(useMetric) {
+	if (useMetric) {
+		$(".imperial").hide()
+		$(".metric").show()
 
-	let dimensions_sets = [myData['dimensions'], myData['face_dimensions'], myData['hand_dimensions']]
+		// TODO: convert imperial values and set them in the metric slots
+		let giantHeight = getGiantHeight(false)
+		let humanHeight = getHumanHeight(false)
+
+	} else {
+		$(".imperial").show()
+		$(".metric").hide()
+
+		// TODO: convert metric values and set them in the imperial slots
+		let giantHeight = getGiantHeight(true)
+		let humanHeight = getHumanHeight(true)
+	}
+}
+
+function updateDimensions(myData) {
+	let useMetric = $("input[name=unitsRadio]:checked").val() == "metric"
+
+	// Toggle unit inputs
+	swapUnits(useMetric)
+
+	// Get and set weight
+	let giantWeight = computeGiantWeight(useMetric)
+	if (useMetric) {
+		$("#giant_kgs").val(formatInt(giantWeight))
+	} else {
+		$("#giant_lbs").val(formatInt(giantWeight))
+	}
+
+	// Update lengths
+	let giantHeight = getGiantHeight(useMetric)
 	let baseHeight = myData['base_height']
 
-	for (dimension_set of dimensions_sets) {
-		for (dimension of dimension_set) {
+	for (const [table_name, dimensions] of Object.entries(myData['tables'])) {
+		for (dimension of dimensions) {
 			let name = dimension['name']
 			let baseLength = dimension['size']
 			let newLength = computeLength(baseLength, baseHeight, giantHeight)
-			newLength = formatInches(newLength)
+			if (useMetric) {
+				newLength = formatCm(newLength)
+			} else {
+				newLength = formatInches(newLength)
+			}
 			let input_id = partToId(dimension)
 			$("#" + input_id).text(newLength)
 		}
