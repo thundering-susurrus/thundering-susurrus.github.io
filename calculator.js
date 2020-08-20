@@ -35,8 +35,13 @@ function toInches(feet, inches) {
 	return 12.0 * feet + inches
 }
 
-function computeLength(baseLength, baseHeight, giantHeight) {
-	let heightRatio = giantHeight / baseHeight;
+function computeLength(baseLength, baseHeight, giantHeight, humanHeight, useRelative) {
+	let heightRatio
+	if (useRelative) {
+		heightRatio = giantHeight / humanHeight;
+	} else {
+		heightRatio = giantHeight / baseHeight;
+	}
 	return baseLength * heightRatio;
 }
 
@@ -105,26 +110,34 @@ function swapUnits(useMetric) {
 	if (useMetric) {
 		$(".imperial").hide()
 		$(".metric").show()
-
-		// TODO: convert imperial values and set them in the metric slots
-		let giantHeight = getGiantHeight(false)
-		let humanHeight = getHumanHeight(false)
-
 	} else {
 		$(".imperial").show()
 		$(".metric").hide()
-
-		// TODO: convert metric values and set them in the imperial slots
-		let giantHeight = getGiantHeight(true)
-		let humanHeight = getHumanHeight(true)
 	}
+}
+
+function swapPerspective(useRelative) {
+	if (useRelative) {
+		$(".relative").show()
+		$(".absolute").hide()
+	} else {
+		$(".relative").hide()
+		$(".absolute").show()
+	}
+}
+
+function getPerspectiveHeightRatio() {
+	getHumanHeight(useMetric)
+
 }
 
 function updateDimensions(myData) {
 	let useMetric = $("input[name=unitsRadio]:checked").val() == "metric"
+	let useRelative = $("#customSwitch1").prop("checked")
 
-	// Toggle unit inputs
+	// Toggle settings
 	swapUnits(useMetric)
+	swapPerspective(useRelative)
 
 	// Get and set weight
 	let giantWeight = computeGiantWeight(useMetric)
@@ -136,13 +149,14 @@ function updateDimensions(myData) {
 
 	// Update lengths
 	let giantHeight = getGiantHeight(useMetric)
+	let humanHeight = getHumanHeight(useMetric)
 	let baseHeight = myData['base_height']
 
 	for (const [table_name, dimensions] of Object.entries(myData['tables'])) {
 		for (dimension of dimensions) {
 			let name = dimension['name']
 			let baseLength = dimension['size']
-			let newLength = computeLength(baseLength, baseHeight, giantHeight)
+			let newLength = computeLength(baseLength, baseHeight, giantHeight, humanHeight, useRelative)
 			if (useMetric) {
 				newLength = formatCm(newLength)
 			} else {

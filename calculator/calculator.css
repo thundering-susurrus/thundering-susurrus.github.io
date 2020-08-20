@@ -50,3 +50,7 @@ th     { background:#fff; }
 .metric {
 	display: none;
 }
+
+.perspective.custom-control-input:checked ~ .custom-control-label::before {
+	border-color: #ecf0f1;
+}
