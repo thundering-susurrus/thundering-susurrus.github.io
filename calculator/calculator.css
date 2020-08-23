@@ -51,6 +51,6 @@ th     { background:#fff; }
 	display: none;
 }
 
-.perspective.custom-control-input:checked ~ .custom-control-label::before {
-	border-color: #ecf0f1;
+.form-group {
+	margin-bottom: 0px;
 }

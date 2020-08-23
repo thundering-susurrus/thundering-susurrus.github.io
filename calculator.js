@@ -131,9 +131,26 @@ function getPerspectiveHeightRatio() {
 
 }
 
+function updateRelHeight(giantHeight, humanHeight, useMetric) {
+	let heightRatio = giantHeight / humanHeight
+	if (useMetric) {
+		let relHeight = heightRatio * 183
+		let m = formatInt(relHeight / 100.0)
+		let cm = formatInt(relHeight % 100)
+		$("#giant_m_rel").val(m)
+		$("#giant_cm_rel").val(cm)
+	} else {
+		let relHeight = heightRatio * (6 * 12)
+		let ft = formatInt(relHeight / 12.0)
+		let inch = formatInt(relHeight % 12)
+		$("#giant_ft_rel").val(ft)
+		$("#giant_in_rel").val(inch)
+	}
+}
+
 function updateDimensions(myData) {
 	let useMetric = $("input[name=unitsRadio]:checked").val() == "metric"
-	let useRelative = $("#customSwitch1").prop("checked")
+	let useRelative = $("input[name=modeRadio]:checked").val() == "relative"
 
 	// Toggle settings
 	swapUnits(useMetric)
@@ -166,6 +183,9 @@ function updateDimensions(myData) {
 			$("#" + input_id).text(newLength)
 		}
 	}
+
+	// Update relative height
+	updateRelHeight(giantHeight, humanHeight, useMetric)
 }
 
 // Runs on start
