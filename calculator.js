@@ -1,7 +1,7 @@
 function computeGiantWeight(useMetric) {
-	let humanHeight = getHumanHeight(useMetric)
-	let giantHeight = getGiantHeight(useMetric)
-	let heightRatio = giantHeight / humanHeight
+	let viewerHeight = getViewerHeight(useMetric)
+	let characterHeight = getCharacterHeight(useMetric)
+	let heightRatio = characterHeight / viewerHeight
 	let humanWeight
 	if (useMetric) {
 		humanWeight = parseFloat($("#kgs_input").val());
@@ -11,7 +11,7 @@ function computeGiantWeight(useMetric) {
 	return humanWeight * (heightRatio ** 3);
 }
 
-function getGiantHeight(useMetric) {
+function getCharacterHeight(useMetric) {
 	if (useMetric) {
 		return toCm(parseFloat($("#giant_m_input").val()), parseFloat($("#giant_cm_input").val()));
 	} else {
@@ -19,7 +19,7 @@ function getGiantHeight(useMetric) {
 	}
 }
 
-function getHumanHeight(useMetric) {
+function getViewerHeight(useMetric) {
 	if (useMetric) {
 		return toCm(parseFloat($("#human_m_input").val()), parseFloat($("#human_cm_input").val()));
 	} else {
@@ -35,12 +35,12 @@ function toInches(feet, inches) {
 	return 12.0 * feet + inches
 }
 
-function computeLength(baseLength, baseHeight, giantHeight, humanHeight, useRelative) {
+function computeLength(baseLength, baseHeight, characterHeight, viewerHeight, useRelative) {
 	let heightRatio
 	if (useRelative) {
-		heightRatio = giantHeight / humanHeight;
+		heightRatio = characterHeight / viewerHeight;
 	} else {
-		heightRatio = giantHeight / baseHeight;
+		heightRatio = characterHeight / baseHeight;
 	}
 	return baseLength * heightRatio;
 }
@@ -79,6 +79,13 @@ function formatCm(x) {
 
 function formatInt(x) {
 	return Math.round(x)
+}
+
+function formatUnit(x, base) {
+	// Assumes x is in the "smaller" units (ie in or cm)
+	let biggerUnit = Math.floor(x/base)
+	let smallerUnit = Math.round(x % base)
+	return [biggerUnit, smallerUnit]
 }
 
 function partToId(dimension) {
@@ -127,22 +134,20 @@ function swapPerspective(useRelative) {
 }
 
 function getPerspectiveHeightRatio() {
-	getHumanHeight(useMetric)
-
+	getViewerHeight(useMetric)
 }
 
-function updateRelHeight(giantHeight, humanHeight, useMetric) {
-	let heightRatio = giantHeight / humanHeight
+function updateRelHeight(characterHeight, viewerHeight, useMetric, baseHeight) {
+	let heightRatio = characterHeight / viewerHeight
 	if (useMetric) {
-		let relHeight = heightRatio * 183
-		let m = formatInt(relHeight / 100.0)
-		let cm = formatInt(relHeight % 100)
+		let baseHeightCm = baseHeight * 2.54
+		let relHeight = heightRatio * baseHeightCm
+		let [m, cm] = formatUnit(relHeight, 100)
 		$("#giant_m_rel").val(m)
 		$("#giant_cm_rel").val(cm)
 	} else {
-		let relHeight = heightRatio * (6 * 12)
-		let ft = formatInt(relHeight / 12.0)
-		let inch = formatInt(relHeight % 12)
+		let relHeight = heightRatio * baseHeight
+		let [ft, inch] = formatUnit(relHeight, 12)
 		$("#giant_ft_rel").val(ft)
 		$("#giant_in_rel").val(inch)
 	}
@@ -165,15 +170,15 @@ function updateDimensions(myData) {
 	}
 
 	// Update lengths
-	let giantHeight = getGiantHeight(useMetric)
-	let humanHeight = getHumanHeight(useMetric)
+	let characterHeight = getCharacterHeight(useMetric)
+	let viewerHeight = getViewerHeight(useMetric)
 	let baseHeight = myData['base_height']
 
 	for (const [table_name, dimensions] of Object.entries(myData['tables'])) {
 		for (dimension of dimensions) {
 			let name = dimension['name']
 			let baseLength = dimension['size']
-			let newLength = computeLength(baseLength, baseHeight, giantHeight, humanHeight, useRelative)
+			let newLength = computeLength(baseLength, baseHeight, characterHeight, viewerHeight, useRelative)
 			if (useMetric) {
 				newLength = formatCm(newLength)
 			} else {
@@ -185,7 +190,7 @@ function updateDimensions(myData) {
 	}
 
 	// Update relative height
-	updateRelHeight(giantHeight, humanHeight, useMetric)
+	updateRelHeight(characterHeight, viewerHeight, useMetric, baseHeight)
 }
 
 // Runs on start
