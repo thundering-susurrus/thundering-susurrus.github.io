@@ -13,26 +13,26 @@ function computeGiantWeight(useMetric) {
 
 function getCharacterHeight(useMetric) {
 	if (useMetric) {
-		return toCm(parseFloat($("#giant_m_input").val()), parseFloat($("#giant_cm_input").val()));
+		return toMeters(parseFloat($("#giant_m_input").val()), parseFloat($("#giant_cm_input").val()));
 	} else {
-		return toInches(parseFloat($("#giant_ft_input").val()), parseFloat($("#giant_in_input").val()));
+		return toFeet(parseFloat($("#giant_ft_input").val()), parseFloat($("#giant_in_input").val()));
 	}
 }
 
 function getViewerHeight(useMetric) {
 	if (useMetric) {
-		return toCm(parseFloat($("#human_m_input").val()), parseFloat($("#human_cm_input").val()));
+		return toMeters(parseFloat($("#human_m_input").val()), parseFloat($("#human_cm_input").val()));
 	} else {
-		return toInches(parseFloat($("#human_ft_input").val()), parseFloat($("#human_in_input").val()));
+		return toFeet(parseFloat($("#human_ft_input").val()), parseFloat($("#human_in_input").val()));
 	}
 }
 
-function toCm(meters, centimeters) {
-	return meters * 100.0 + centimeters
+function toMeters(meters, centimeters) {
+	return meters + centimeters/100.0
 }
 
-function toInches(feet, inches) {
-	return 12.0 * feet + inches
+function toFeet(feet, inches) {
+	return feet + inches/12.0
 }
 
 function computeLength(baseLength, baseHeight, characterHeight, viewerHeight, useRelative) {
@@ -45,36 +45,48 @@ function computeLength(baseLength, baseHeight, characterHeight, viewerHeight, us
 	return baseLength * heightRatio;
 }
 
-function formatInches(x) {
-	let feet = Math.floor(x / 12)
-	let inches = (x % 12).toFixed(2).replace(/\.?0*$/, "")
-	let finalString = ""
-	if (feet != 0) {
-		finalString += feet + " ft"
-	}
-	if ((inches != "0") && (feet != 0)) {
-		finalString += " "
-	}
-	if (inches != "0") {
-		finalString += inches + " in"
-	}
-	return finalString
+function formatFeet(f) {
+  if (f >= 100) {
+    const feet = Math.round(f);
+    return `${feet} ft`;
+  } else if (f >= 1 && f < 100) {
+    const feet = Math.floor(f);
+    const inches = Math.round((f - feet) * 12);
+    const feetString = feet > 0 ? `${feet} ft` : '';
+    const inchesString = inches > 0 ? `${inches} in` : '';
+    return feetString + (feetString && inchesString ? ' ' : '') + inchesString;
+  } else if (f >= 1 / 12 && f < 1) {
+    const inches = (f * 12).toFixed(1);
+    return `${parseFloat(inches)} in`;
+  } else {
+    const inches = (f * 12).toPrecision(2);
+    return `${parseFloat(inches)} in`;
+  }
 }
 
-function formatCm(x) {
-	let meters = Math.floor(x / 100)
-	let centimeters = Math.round(x % 100).toString()
-	let finalString = ""
-	if (meters != 0) {
-		finalString += meters + " m"
-	}
-	if ((centimeters != "0") && (meters != 0)) {
-		finalString += " "
-	}
-	if (centimeters != "0") {
-		finalString += centimeters + " cm"
-	}
-	return finalString
+function formatMeters(m) {
+  if (m >= 1 && m < 1000) {
+    const meters = Math.floor(m);
+    const centimeters = Math.round((m - meters) * 100);
+    const metersString = meters > 0 ? `${meters} m` : '';
+    const centimetersString = centimeters > 0 ? `${centimeters} cm` : '';
+    return metersString + (metersString && centimetersString ? ' ' : '') + centimetersString;
+  } else if (m >= 1000 && m < 10000) {
+    const kilometers = (m / 1000).toFixed(2);
+    return `${parseFloat(kilometers)} km`;
+  } else if (m >= 10000 && m < 100000) {
+    const kilometers = (m / 1000).toFixed(1);
+    return `${parseFloat(kilometers)} km`;
+  } else if (m >= 100000) {
+    const kilometers = Math.round(m / 1000);
+    return `${kilometers} km`;
+  } else if (m >= 0.1 && m < 1) {
+    const centimeters = (m * 100).toFixed(1);
+    return `${parseFloat(centimeters)} cm`;
+  } else {
+    const millimeters = (m * 1000).toPrecision(2);
+    return `${parseFloat(millimeters)} mm`;
+  }
 }
 
 function formatInt(x) {
@@ -82,9 +94,9 @@ function formatInt(x) {
 }
 
 function formatUnit(x, base) {
-	// Assumes x is in the "smaller" units (ie in or cm)
-	let biggerUnit = Math.floor(x/base)
-	let smallerUnit = Math.round(x % base)
+	// Assumes x is in the "larger" units (ie ft or m)
+	let biggerUnit = Math.floor(x)
+	let smallerUnit = Math.round((x%1)*base)
 	return [biggerUnit, smallerUnit]
 }
 
@@ -103,7 +115,7 @@ function buildDimensions(myData) {
 	for (const [table_name, dimensions] of Object.entries(myData['tables'])) {
 		for (dimension of dimensions) {
 			let name = dimension['name']
-			let size = formatInches(dimension['size'])
+			let size = formatFeet(dimension['size'])
 			let input_id = partToId(dimension)
 			let htmlString = '<tr><td>' + name + '</td><td id=\"' + input_id + '\">' + size + '</td></tr>'
 			$("#" + table_name + "_table").append(htmlString)
@@ -180,9 +192,9 @@ function updateDimensions(myData) {
 			let baseLength = dimension['size']
 			let newLength = computeLength(baseLength, baseHeight, characterHeight, viewerHeight, useRelative)
 			if (useMetric) {
-				newLength = formatCm(newLength)
+				newLength = formatMeters(newLength)
 			} else {
-				newLength = formatInches(newLength)
+				newLength = formatFeet(newLength)
 			}
 			let input_id = partToId(dimension)
 			$("#" + input_id).text(newLength)
