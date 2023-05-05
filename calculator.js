@@ -1,16 +1,14 @@
-function computeGiantWeight(useMetric) {
-	let viewerHeight = getViewerHeight(useMetric)
-	let characterHeight = getCharacterHeight(useMetric)
-	let heightRatio = characterHeight / viewerHeight
-	let humanWeight
-	if (useMetric) {
-		humanWeight = parseFloat($("#kgs_input").val());
-	} else {
-		humanWeight = parseFloat($("#lbs_input").val());
-	}
-	return humanWeight * (heightRatio ** 3);
+// Compute the weight of the character based on their height
+function computeCharacterWeight(useMetric) {
+  const viewerHeight = getViewerHeight(useMetric);
+  const characterHeight = getCharacterHeight(useMetric);
+  const heightRatio = characterHeight / viewerHeight;
+  const weightInputId = useMetric ? '#kgs_input' : '#lbs_input';
+  const humanWeight = parseFloat($(weightInputId).val());
+  return humanWeight * (heightRatio ** 3);
 }
 
+// Get character height from input fields
 function getCharacterHeight(useMetric) {
 	if (useMetric) {
 		return toMeters(parseFloat($("#giant_m_input").val()), parseFloat($("#giant_cm_input").val()));
@@ -19,6 +17,7 @@ function getCharacterHeight(useMetric) {
 	}
 }
 
+// Get viewer height from input fields
 function getViewerHeight(useMetric) {
 	if (useMetric) {
 		return toMeters(parseFloat($("#human_m_input").val()), parseFloat($("#human_cm_input").val()));
@@ -35,6 +34,17 @@ function toFeet(feet, inches) {
 	return feet + inches/12.0
 }
 
+/**
+ * Computes the absolute or relative length of an object.
+ *
+ * @param {number} baseLength - The length of the object on a normal human.
+ * @param {number} baseHeight - The height of a normal human.
+ * @param {number} characterHeight - The height of the character.
+ * @param {number} viewerHeight - The height of the person viewing the character.
+ * @param {boolean} useRelative - If true, calculated the relative/perceived length of the object from the 
+   perspective of the viewer; otherwise, calculates the absolute length.
+ * @returns {number} - The computed absolute or relative length of the object.
+ */
 function computeLength(baseLength, baseHeight, characterHeight, viewerHeight, useRelative) {
 	let heightRatio
 	if (useRelative) {
@@ -45,6 +55,7 @@ function computeLength(baseLength, baseHeight, characterHeight, viewerHeight, us
 	return baseLength * heightRatio;
 }
 
+// Formats feet and inches prettily for display
 function formatFeet(f) {
   if (f >= 100) {
     const feet = Math.round(f);
@@ -64,6 +75,7 @@ function formatFeet(f) {
   }
 }
 
+// Formats meters prettily for display. Supports km, m, cm, and mm.
 function formatMeters(m) {
   if (m >= 1 && m < 1000) {
     const meters = Math.floor(m);
@@ -80,7 +92,7 @@ function formatMeters(m) {
   } else if (m >= 100000) {
     const kilometers = Math.round(m / 1000);
     return `${kilometers} km`;
-  } else if (m >= 0.1 && m < 1) {
+  } else if (m >= 0.01 && m < 1) {
     const centimeters = (m * 100).toFixed(1);
     return `${parseFloat(centimeters)} cm`;
   } else {
@@ -89,25 +101,15 @@ function formatMeters(m) {
   }
 }
 
-function formatInt(x) {
-	return Math.round(x)
-}
-
 function formatUnit(x, base) {
-	// Assumes x is in the "larger" units (ie ft or m)
+	// Assumes x is in the "bigger" units (ie ft or m)
 	let biggerUnit = Math.floor(x)
 	let smallerUnit = Math.round((x%1)*base)
 	return [biggerUnit, smallerUnit]
 }
 
 function partToId(dimension) {
-	let formatted_part;
-	if ("id" in dimension) {
-		formatted_part = dimension['id']
-	} else {
-		formatted_part = dimension['name'].replace(" ", "_")
-	}
-	return "body_part_" + formatted_part + "_elt"
+  return "body_part_" + dimension['id'] + "_elt";
 }
 
 function buildDimensions(myData) {
@@ -152,8 +154,8 @@ function getPerspectiveHeightRatio() {
 function updateRelHeight(characterHeight, viewerHeight, useMetric, baseHeight) {
 	let heightRatio = characterHeight / viewerHeight
 	if (useMetric) {
-		let baseHeightCm = baseHeight * 2.54
-		let relHeight = heightRatio * baseHeightCm
+		let baseHeightM = baseHeight * 0.3048
+		let relHeight = heightRatio * baseHeightM
 		let [m, cm] = formatUnit(relHeight, 100)
 		$("#giant_m_rel").val(m)
 		$("#giant_cm_rel").val(cm)
@@ -165,6 +167,7 @@ function updateRelHeight(characterHeight, viewerHeight, useMetric, baseHeight) {
 	}
 }
 
+// Runs every time you change an input field
 function updateDimensions(myData) {
 	let useMetric = $("input[name=unitsRadio]:checked").val() == "metric"
 	let useRelative = $("input[name=modeRadio]:checked").val() == "relative"
@@ -174,30 +177,22 @@ function updateDimensions(myData) {
 	swapPerspective(useRelative)
 
 	// Get and set weight
-	let giantWeight = computeGiantWeight(useMetric)
-	if (useMetric) {
-		$("#giant_kgs").val(formatInt(giantWeight))
-	} else {
-		$("#giant_lbs").val(formatInt(giantWeight))
-	}
+	let giantWeight = computeCharacterWeight(useMetric);
+	let weightInputId = useMetric ? '#giant_kgs' : '#giant_lbs';
+	$(weightInputId).val(Math.round(giantWeight));
 
-	// Update lengths
+	// Update body part lengths
 	let characterHeight = getCharacterHeight(useMetric)
 	let viewerHeight = getViewerHeight(useMetric)
 	let baseHeight = myData['base_height']
 
 	for (const [table_name, dimensions] of Object.entries(myData['tables'])) {
-		for (dimension of dimensions) {
-			let name = dimension['name']
-			let baseLength = dimension['size']
-			let newLength = computeLength(baseLength, baseHeight, characterHeight, viewerHeight, useRelative)
-			if (useMetric) {
-				newLength = formatMeters(newLength)
-			} else {
-				newLength = formatFeet(newLength)
-			}
-			let input_id = partToId(dimension)
-			$("#" + input_id).text(newLength)
+		for (const dimension of dimensions) {
+			const { name, size: baseLength } = dimension;
+			let newLength = computeLength(baseLength, baseHeight, characterHeight, viewerHeight, useRelative);
+			newLength = useMetric ? formatMeters(newLength) : formatFeet(newLength);
+			const input_id = partToId(dimension);
+			$("#" + input_id).text(newLength);
 		}
 	}
 
@@ -207,20 +202,39 @@ function updateDimensions(myData) {
 
 // Runs on start
 $(document).ready(function() {
-	$.getJSON("data.json", buildDimensions).done(
-		function(myData) {
-			$("input").change(function() {
-				updateDimensions(myData)
-			});
+  $.getJSON("data.json").done(function(originalData) {
+    // Make changes to the originalData here
+    let myData = processMyData(originalData); 
+
+    // Call buildDimensions with the updated myData
+    buildDimensions(myData);
+
+    // Set up event listener for input changes and call updateDimensions with updated myData
+    $("input").change(function() {
+      updateDimensions(myData);
+    });
+  });
+
+  // Prevent non-numeric entry
+  $("input").keypress(function(e) {
+    if (
+      e.key.length === 1 && e.key !== '.' && isNaN(e.key) && !e.ctrlKey ||
+      e.key === '.' && e.target.value.toString().indexOf('.') > -1
+    ) {
+      e.preventDefault();
+    }
+  });
+});
+
+
+// Convert stored lengths from inches to feet.
+function processMyData(data) {
+	data['base_height'] = data['base_height']/12.0;
+	for (const [table_name, dimensions] of Object.entries(data['tables'])) {
+		for (dimension of dimensions) {
+			dimension['size'] = dimension['size']/12.0
 		}
-	)
-	// prevent non-numeric entry
-	$("input").keypress(function(e) {
-		if (
-			e.key.length === 1 && e.key !== '.' && isNaN(e.key) && !e.ctrlKey ||
-			e.key === '.' && e.target.value.toString().indexOf('.') > -1
-		) {
-			e.preventDefault();
-		}
-	})
-})
+	}
+
+	return data;
+}
