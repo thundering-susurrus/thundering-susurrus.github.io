@@ -10,19 +10,23 @@ function computeCharacterWeight(useMetric) {
 
 // Get character height from input fields
 function getCharacterHeight(useMetric) {
-	if (useMetric) {
-		return toMeters(parseFloat($("#giant_m_input").val()), parseFloat($("#giant_cm_input").val()));
-	} else {
-		return toFeet(parseFloat($("#giant_ft_input").val()), parseFloat($("#giant_in_input").val()));
-	}
+  const parseValueOrZero = (value) => parseFloat(value) || 0;
+
+  if (useMetric) {
+    return toMeters(parseValueOrZero($("#giant_m_input").val()), parseValueOrZero($("#giant_cm_input").val()));
+  } else {
+    return toFeet(parseValueOrZero($("#giant_ft_input").val()), parseValueOrZero($("#giant_in_input").val()));
+  }
 }
 
 // Get viewer height from input fields
 function getViewerHeight(useMetric) {
+	const parseValueOrZero = (value) => parseFloat(value) || 0;
+
 	if (useMetric) {
-		return toMeters(parseFloat($("#human_m_input").val()), parseFloat($("#human_cm_input").val()));
+		return toMeters(parseValueOrZero($("#human_m_input").val()), parseValueOrZero($("#human_cm_input").val()));
 	} else {
-		return toFeet(parseFloat($("#human_ft_input").val()), parseFloat($("#human_in_input").val()));
+		return toFeet(parseValueOrZero($("#human_ft_input").val()), parseValueOrZero($("#human_in_input").val()));
 	}
 }
 
@@ -99,6 +103,14 @@ function formatMeters(m) {
     const millimeters = (m * 1000).toPrecision(2);
     return `${parseFloat(millimeters)} mm`;
   }
+}
+
+function formatWeight(w) {
+	if (w < 10) {
+		return w.toPrecision(2);
+	} else {
+		return Math.round(w);
+	}
 }
 
 function formatUnit(x, base) {
@@ -179,7 +191,8 @@ function updateDimensions(myData) {
 	// Get and set weight
 	let giantWeight = computeCharacterWeight(useMetric);
 	let weightInputId = useMetric ? '#giant_kgs' : '#giant_lbs';
-	$(weightInputId).val(Math.round(giantWeight));
+	const weightStr = formatWeight(giantWeight);
+	$(weightInputId).val(weightStr);
 
 	// Update body part lengths
 	let characterHeight = getCharacterHeight(useMetric)
