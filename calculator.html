@@ -10,6 +10,9 @@
     <link rel="stylesheet" type="text/css" href="calculator/bootstrap.min.css">
     <link rel="stylesheet" type="text/css" href="calculator/calculator.css">
     <script src="calculator.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono&display=swap" rel="stylesheet">
     <title>G/t calculator</title>
     <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
@@ -28,7 +31,7 @@
           <div class="container ">
             <h4>About</h4>
             <p class="text-justify">
-              This is a tool for calculating the proportions of a character of a given size. Note that all measurements are based on an idealized Caucasian male. This site is not underactive development, but you can submit any feedback to <a href="https://thundering-susurrus.tumblr.com/ask">thundering-susurrus</a>.
+              This is a tool for calculating the proportions of a character of a given size. Note that all measurements are based on an idealized Caucasian male. This site is not under active development, but you can submit any feedback to <a href="https://thundering-susurrus.tumblr.com/ask">thundering-susurrus</a>.
             </p>
             <h4>Instructions</h4>
             <ol>
@@ -153,7 +156,7 @@
               <hr>
             </div>
             <hr>
-            <div class="container">
+            <div class="container" id="table-box">
               <div class="bs-component">
                 <ul class="nav nav-tabs">
                   <li class="nav-item">
@@ -170,7 +173,7 @@
                   <div class="tab-pane fade" id="general_dimensions">
                     <div class="row d-flex flex-wrap align-items-center">
                       <div class="col-12 col-md-6 tableFixHead">
-                        <table class="table table-hover" style="table-layout:fixed;">
+                        <table class="data-table table table-hover" style="table-layout:fixed;">
                           <thead>
                             <tr>
                               <th>body part</th>
@@ -189,7 +192,7 @@
                   <div class="tab-pane fade" id="facial_features">
                     <div class="row d-flex flex-wrap align-items-center">
                       <div class="col-12 col-md-6 tableFixHead">
-                        <table class="table table-hover" style="table-layout:fixed;">
+                        <table class="data-table table table-hover" style="table-layout:fixed;">
                           <thead>
                             <tr>
                               <th>body part</th>
@@ -208,7 +211,7 @@
                   <div class="tab-pane fade active show" id="hand_dimensions">
                     <div class="row d-flex flex-wrap align-items-center">
                       <div class="col-12 col-md-6 tableFixHead">
-                        <table class="table table-hover" style="table-layout:fixed;">
+                        <table class="data-table table table-hover" style="table-layout:fixed;">
                           <thead>
                             <tr>
                               <th>body part</th>
