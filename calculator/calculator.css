@@ -1,6 +1,6 @@
 font-family: 'Roboto Mono', monospace;
 
-#table-box {
+#table_box {
   padding: 0px;
 }
 
@@ -35,10 +35,12 @@ table {
   font-family: monospace;
 }
 
+
 .row {
   margin-left: 0;
   margin-right: 0;
 }
+
 
 .tableFixHead          { 
   overflow-y: auto; 
@@ -50,6 +52,11 @@ table {
   position: sticky; 
   top: 0; 
   z-index: 1;
+}
+
+#table_box {
+  padding-left: 0;
+  padding-right: 0;
 }
 
 img {
@@ -67,7 +74,8 @@ th     {
 }
 
 #wrapper {
-	overflow-x:hidden}
+	overflow-x:hidden
+}
 
 .metric {
 	display: none;
