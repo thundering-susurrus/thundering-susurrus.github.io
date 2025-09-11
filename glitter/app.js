@@ -1,11 +1,13 @@
 import { clamp, el, normalizeHex, capitalize, escapeHtml, hslToHex, shadeHex, jitterHex } from './utils.js';
 
 // State
-let mix = []; // {id, name, shape, sizeMm, color, density, seed}
+let mix = []; // {id, name, shape, sizeIn, color, density, seed}
 let seedCounter = 1;
 let nailBase = '#f3d9cf';
+let skinTone = '#f1d2c5';
+let nailBaseCustomized = false; // Track if user has customized nail base
 const glitterOpacity = 1.0; // full opacity with color variation for realism
-const densityMax = 200; // 2x original
+const densityMax = 100;
 
 // DOM refs
 const stage = el('#stage');
@@ -17,11 +19,81 @@ const importBtn = el('#import-json');
 const randomizeBtn = el('#randomize');
 const baseColor = el('#base-color');
 const baseColorHex = el('#base-color-hex');
+const skinToneChips = el('#skin-tone-chips');
 const glitterList = el('#glitter-list');
 
+// Available glitter sizes (in inches) - smallest to largest
+const availableSizes = [0.008, 0.015, 0.025, 0.035, 0.040, 0.062, 0.078, 0.094];
+
+// Preset colors
+const presetColors = [
+  { name: 'Red', color: '#ff4444' },
+  { name: 'Orange', color: '#ff8844' },
+  { name: 'Yellow', color: '#ffdd44' },
+  { name: 'Green', color: '#44ff44' },
+  { name: 'Blue', color: '#4488ff' },
+  { name: 'Indigo', color: '#6644ff' },
+  { name: 'Violet', color: '#aa44ff' },
+  { name: 'White', color: '#ffffff' },
+  { name: 'Black', color: '#222222' },
+  { name: 'Pink', color: '#ff66aa' }
+];
+
+// Skin tone presets - realistic human skin colors
+const skinTones = [
+  { name: 'Fair', color: '#f1d2c5', nailDefault: '#f3d9cf' },
+  { name: 'Light', color: '#e8c5a0', nailDefault: '#e5c7a6' },
+  { name: 'Medium', color: '#d4a574', nailDefault: '#d1a673' },
+  { name: 'Olive', color: '#c69c6d', nailDefault: '#c49960' },
+  { name: 'Tan', color: '#b08556', nailDefault: '#ad7f4e' },
+  { name: 'Deep', color: '#8b6914', nailDefault: '#886420' },
+  { name: 'Rich', color: '#6d4c07', nailDefault: '#6b4712' },
+  { name: 'Dark', color: '#4a3728', nailDefault: '#493425' }
+];
+
 // Helpers
-function autoName(shape, sizeMm){
-  return `${capitalize(shape)} ${Number(sizeMm).toFixed(1)}mm`;
+function autoName(shape, sizeIn){
+  return `${capitalize(shape)} ${Number(sizeIn).toFixed(3)}"`;
+}
+
+function getSliderIndexForSize(sizeIn) {
+  const index = availableSizes.indexOf(sizeIn);
+  return index >= 0 ? index : 0;
+}
+
+function getSizeForSliderIndex(index) {
+  return availableSizes[Math.max(0, Math.min(index, availableSizes.length - 1))];
+}
+
+function initializeSkinTones() {
+  skinToneChips.innerHTML = '';
+  skinTones.forEach((tone, index) => {
+    const chip = document.createElement('div');
+    chip.className = `skin-tone-chip${index === 0 ? ' active' : ''}`;
+    chip.style.backgroundColor = tone.color;
+    chip.title = tone.name;
+    chip.dataset.tone = JSON.stringify(tone);
+    
+    chip.addEventListener('click', () => {
+      // Update active state
+      document.querySelectorAll('.skin-tone-chip').forEach(c => c.classList.remove('active'));
+      chip.classList.add('active');
+      
+      // Update skin tone
+      skinTone = tone.color;
+      
+      // Update nail base only if not customized
+      if (!nailBaseCustomized) {
+        nailBase = tone.nailDefault;
+        baseColor.value = nailBase;
+        baseColorHex.value = nailBase;
+      }
+      
+      render();
+    });
+    
+    skinToneChips.appendChild(chip);
+  });
 }
 
 // Rendering
@@ -39,6 +111,7 @@ function render(){
   const defs = document.createElementNS(svgNS, 'defs');
 
   // Drop shadow filter that each piece can use so layering shows
+  /* COMMENTED OUT - DROP SHADOW DISABLED
   const filt = document.createElementNS(svgNS, 'filter');
   filt.setAttribute('id', 'pieceShadow');
   filt.setAttribute('x', '-30%'); filt.setAttribute('y', '-30%');
@@ -58,16 +131,17 @@ function render(){
   feMerge.appendChild(feM1); feMerge.appendChild(feM2);
   filt.appendChild(feOffset); filt.appendChild(feBlur); filt.appendChild(feColor); filt.appendChild(feMerge);
   defs.appendChild(filt);
+  */
 
   // Clip path for nail
   const clip = document.createElementNS(svgNS, 'clipPath');
   clip.setAttribute('id', 'nail-clip');
   const nailClip = document.createElementNS(svgNS,'path');
   nailClip.setAttribute('d', `
-    M 95 120
-    Q 150 80 205 120
-    L 205 360
-    Q 150 400 95 360
+    M 95 154
+    Q 150 120 205 154
+    L 205 291
+    Q 150 325 95 291
     Z
   `);
   clip.appendChild(nailClip);
@@ -88,17 +162,17 @@ function render(){
     L 150 450
     Z
   `);
-  finger.setAttribute('fill', '#f1d2c5');
+  finger.setAttribute('fill', skinTone);
   finger.setAttribute('stroke', 'rgba(0,0,0,0.08)');
   finger.setAttribute('stroke-width', '2');
   group.appendChild(finger);
 
   const nail = document.createElementNS(svgNS,'path');
   nail.setAttribute('d', `
-    M 95 120
-    Q 150 80 205 120
-    L 205 360
-    Q 150 400 95 360
+    M 95 154
+    Q 150 120 205 154
+    L 205 291
+    Q 150 325 95 291
     Z
   `);
   nail.setAttribute('fill', nailBase);
@@ -112,13 +186,14 @@ function render(){
   const glitterLayer = document.createElementNS(svgNS,'g');
   glitterLayer.setAttribute('clip-path','url(#nail-clip)');
 
-  const nailBox = {x: 95, y: 80, w: 110, h: 280}; // cropped to focus on nail area
+  const nailBox = {x: 95, y: 120, w: 110, h: 205}; // actual nail dimensions: 0.9mm x 1.4mm
 
-  function piecesFor(density, sizeMm){
-    const pxPerMm = 110 / 13; // ~8.46 px/mm
-    const sPx = Math.max(0.5, sizeMm * pxPerMm);
-    const basePieces = density * 3.2;
-    const sizeFactor = 16 / (sPx*sPx + 6);
+  function piecesFor(density, sizeIn){
+    // Use correct real-world scale: nail is 0.9mm (0.0354") wide = 110px
+    const pxPerIn = 110 / 0.0354; // 3104 pixels per inch - maintains true proportions
+    const sPx = Math.max(0.5, sizeIn * pxPerIn);
+    const basePieces = density * 3.2 * 10;
+    const sizeFactor = 16 / Math.pow(sPx * sPx + 6, 0.5);
     return Math.round(basePieces * sizeFactor);
   }
 
@@ -137,9 +212,9 @@ function render(){
   
   for(const g of mix){
     const rand = rng(g.seed);
-    const pxPerMm = 110 / 13;
-    const sizePx = clamp(g.sizeMm * pxPerMm, 0.5, 30);
-    const count = piecesFor(g.density, g.sizeMm);
+    const pxPerIn = 110 / 0.5118;
+    const sizePx = clamp(g.sizeIn * pxPerIn, 0.5, 30);
+    const count = piecesFor(g.density, g.sizeIn);
 
     for(let i=0;i<count;i++){
       // Generate coordinates that better fit the nail shape
@@ -182,7 +257,7 @@ function render(){
 
       // Create a wrapper group for the piece to separate shadow from rotation
       const pieceGroup = document.createElementNS(svgNS,'g');
-      pieceGroup.setAttribute('filter', 'url(#pieceShadow)');
+      // pieceGroup.setAttribute('filter', 'url(#pieceShadow)'); // COMMENTED OUT - DROP SHADOW DISABLED
 
       let shapeEl;
       if(g.shape === 'circle'){
@@ -217,7 +292,10 @@ function render(){
       const lightnessJitter = (rand()-0.5)*0.08;
       const saturationJitter = (rand()-0.5)*0.06;
       const fill = jitterHex(g.color, lightnessJitter, saturationJitter);
+      const borderColor = shadeHex(fill, -0.25); // Darker border
       shapeEl.setAttribute('fill', fill);
+      shapeEl.setAttribute('stroke', borderColor);
+      shapeEl.setAttribute('stroke-width', '0.5');
       shapeEl.setAttribute('opacity', glitterOpacity);
 
       pieceGroup.appendChild(shapeEl);
@@ -357,7 +435,7 @@ function refreshList(){
         <div class="swatch">${createShapeSwatch(g.shape, g.color)}</div>
         <div class="meta">
           <div class="title">${escapeHtml(g.name)}</div>
-          <div class="mini">${g.shape} • ${g.sizeMm.toFixed(1)}mm • density ${g.density}</div>
+          <div class="mini">${g.shape} • ${g.sizeIn.toFixed(3)}" • density ${g.density}</div>
         </div>
         <div class="actions">
           <button class="duplicate" title="Duplicate" aria-label="Duplicate glitter" data-action="duplicate">
@@ -384,15 +462,28 @@ function refreshList(){
             </div>
           </div>
           <div class="ed-field">
-            <label class="ed-label" for="size-${g.id}">Size (mm)</label>
-            <input id="size-${g.id}" type="range" min="0.3" max="4" step="0.1" value="${g.sizeMm.toFixed(1)}" />
-            <div class="legend"><span id="size-val-${g.id}">${g.sizeMm.toFixed(1)} mm</span></div>
+            <label class="ed-label" for="size-${g.id}">Size (inches)</label>
+            <input id="size-${g.id}" type="range" min="0" max="7" step="1" value="${getSliderIndexForSize(g.sizeIn)}" />
+            <div class="legend"><span id="size-val-${g.id}">${g.sizeIn.toFixed(3)}"</span></div>
           </div>
           <div class="ed-field">
             <label class="ed-label">Color</label>
-            <div class="ed-row">
-              <input id="color-${g.id}" type="color" value="${g.color}" />
-              <input id="colorhex-${g.id}" type="text" value="${g.color}" />
+            <div class="color-chips" data-color-group="${g.id}">
+              ${presetColors.map(c => `
+                <div class="color-chip${g.color.toLowerCase() === c.color.toLowerCase() ? ' active' : ''}" 
+                     data-color="${c.color}" 
+                     style="background-color: ${c.color}" 
+                     title="${c.name}">
+                </div>`).join('')}
+              <div class="color-chip custom${!presetColors.some(c => c.color.toLowerCase() === g.color.toLowerCase()) ? ' active' : ''}" 
+                   data-color="custom" 
+                   title="Custom color">
+                <span style="font-size: 10px; font-weight: bold;">?</span>
+              </div>
+            </div>
+            <div class="custom-color-row" style="display: ${!presetColors.some(c => c.color.toLowerCase() === g.color.toLowerCase()) ? 'flex' : 'none'}; gap: 8px; margin-top: 8px; align-items: center;">
+              <input id="color-${g.id}" type="color" value="${g.color}" style="flex-shrink: 0;" />
+              <input id="colorhex-${g.id}" type="text" value="${g.color}" style="flex: 1;" />
             </div>
           </div>
           <div class="ed-field">
@@ -441,7 +532,7 @@ function refreshList(){
         id: crypto.randomUUID(),
         name: g.name,
         shape: g.shape,
-        sizeMm: g.sizeMm,
+        sizeIn: g.sizeIn,
         color: g.color,
         density: g.density,
         seed: ++seedCounter
@@ -473,7 +564,7 @@ function refreshList(){
         
         // Update glitter data
         g.shape = btn.dataset.shape;
-        g.name = autoName(g.shape, g.sizeMm);
+        g.name = autoName(g.shape, g.sizeIn);
         title.textContent = g.name;
         chip.querySelector('.swatch').innerHTML = createShapeSwatch(g.shape, g.color);
         refreshMiniMeta(chip, g);
@@ -484,9 +575,9 @@ function refreshList(){
     const sizeInput = chip.querySelector(`#size-${g.id}`);
     const sizeVal = chip.querySelector(`#size-val-${g.id}`);
     sizeInput.addEventListener('input', () => {
-      g.sizeMm = Number(sizeInput.value);
-      sizeVal.textContent = `${g.sizeMm.toFixed(1)} mm`;
-      g.name = autoName(g.shape, g.sizeMm);
+      g.sizeIn = getSizeForSliderIndex(Number(sizeInput.value));
+      sizeVal.textContent = `${g.sizeIn.toFixed(3)}"`;
+      g.name = autoName(g.shape, g.sizeIn);
       title.textContent = g.name;
       refreshMiniMeta(chip, g);
       render();
@@ -501,8 +592,35 @@ function refreshList(){
       render();
     });
 
+    // Color chip selection
+    const colorChips = chip.querySelectorAll('.color-chip');
+    const customColorRow = chip.querySelector('.custom-color-row');
     const colorPicker = chip.querySelector(`#color-${g.id}`);
     const colorHex = chip.querySelector(`#colorhex-${g.id}`);
+    
+    colorChips.forEach(chipEl => {
+      chipEl.addEventListener('click', () => {
+        // Update active state
+        colorChips.forEach(c => c.classList.remove('active'));
+        chipEl.classList.add('active');
+        
+        if (chipEl.dataset.color === 'custom') {
+          // Show custom color controls
+          customColorRow.style.display = 'flex';
+        } else {
+          // Hide custom color controls and use preset color
+          customColorRow.style.display = 'none';
+          const newColor = chipEl.dataset.color;
+          colorPicker.value = newColor;
+          colorHex.value = newColor;
+          g.color = newColor;
+          chip.querySelector('.swatch').innerHTML = createShapeSwatch(g.shape, newColor);
+          render();
+        }
+      });
+    });
+    
+    // Custom color picker events
     colorPicker.addEventListener('input', () => {
       const val = normalizeHex(colorPicker.value);
       colorHex.value = val;
@@ -526,14 +644,14 @@ function refreshList(){
 
 function refreshMiniMeta(chip, g){
   chip.querySelector('.meta .mini').textContent =
-    `${g.shape} • ${g.sizeMm.toFixed(1)}mm • density ${g.density}`;
+    `${g.shape} • ${g.sizeIn.toFixed(3)}" • density ${g.density}`;
 }
 
 // Create randomized glitter and expand it
 function addRandomGlitter(open=true){
   const shapes = ['circle','square','hex'];
   const shape = shapes[Math.floor(Math.random()*shapes.length)];
-  const sizeMm = +(0.5 + Math.random()*3.0).toFixed(1);
+  const sizeIn = availableSizes[Math.floor(Math.random()*availableSizes.length)];
   const hue = Math.floor(Math.random()*360);
   const sat = 0.45 + Math.random()*0.4;
   const lig = 0.55 + Math.random()*0.2;
@@ -541,8 +659,8 @@ function addRandomGlitter(open=true){
   const density = 20 + Math.floor(Math.random()*(densityMax-20));
   const g = {
     id: crypto.randomUUID(),
-    name: autoName(shape, sizeMm),
-    shape, sizeMm, color, density, seed: ++seedCounter
+    name: autoName(shape, sizeIn),
+    shape, sizeIn, color, density, seed: ++seedCounter
   };
   mix.push(g);
   render();
@@ -638,6 +756,7 @@ baseColor.addEventListener('input', () => {
   const val = normalizeHex(baseColor.value);
   baseColorHex.value = val;
   nailBase = val;
+  nailBaseCustomized = true; // Mark as customized when user changes it
   render();
 });
 baseColorHex.addEventListener('input', () => {
@@ -645,12 +764,14 @@ baseColorHex.addEventListener('input', () => {
   if(/^#([0-9a-f]{6})$/i.test(val)){
     baseColor.value = val;
     nailBase = val;
+    nailBaseCustomized = true; // Mark as customized when user changes it
     render();
   }
 });
 
 // Initialize
 nailBase = normalizeHex(baseColor.value);
+initializeSkinTones();
 // Seed with one randomized glitter and open it
 addRandomGlitter(true);
 
