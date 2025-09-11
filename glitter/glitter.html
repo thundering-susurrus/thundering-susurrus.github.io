@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Glitter Mixer v0 -- Nail Polish Simulator</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header>
+    <h1><span class="logo">G</span> Glitter Mixer v0 <span class="badge">alpha</span></h1>
+  </header>
+
+  <main class="wrap">
+    <!-- Left: Controls (no persistent add form) -->
+    <section class="panel" aria-label="Glitter controls">
+      <h2>Mix controls</h2>
+      <div class="controls" id="controls">
+        <div class="row control-top" >
+          <button class="btn" id="add-random">+ Add randomized glitter</button>
+          <div class="control-row base-control">
+            <div class="label">Nail base</div>
+            <div class="row" style="align-items:center;">
+              <input id="base-color" type="color" value="#f3d9cf" />
+              <input id="base-color-hex" type="text" value="#f3d9cf" />
+            </div>
+          </div>
+        </div>
+
+        <h2>Current mix</h2>
+        <div class="row" style="padding: 0 14px 14px;">
+          <button class="btn secondary" id="randomize">Randomize mix</button>
+          <button class="btn secondary" id="export-json">Export JSON</button>
+          <button class="btn secondary" id="import-json">Import JSON</button>
+          <button class="btn warn" id="clear-mix">Clear mix</button>
+        </div>
+
+        <div class="glitter-list" id="glitter-list" aria-live="polite"></div>
+      </div>
+    </section>
+
+    <!-- Right: Preview -->
+    <section class="panel">
+      <h2>Preview</h2>
+      <div class="preview">
+        <div class="preview-top">
+          <div class="row">
+            <button class="btn secondary" id="reroll">Reroll placement</button>
+          </div>
+        </div>
+        <div class="canvas-wrap">
+          <div class="nail-stage" id="stage" aria-label="Nail preview area"></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>
