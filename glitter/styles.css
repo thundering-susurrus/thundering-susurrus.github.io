@@ -22,9 +22,6 @@ header {
   padding:16px clamp(12px, 3vw, 28px);
   border-bottom:1px solid var(--border);
   background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0));
-  position: sticky;
-  top:0;
-  z-index: 3;
 }
 header h1 {
   margin:0;
@@ -189,7 +186,7 @@ header .badge {
 .copy-icon::after {
   content: '';
   position: absolute;
-  border: 1.5px solid currentColor;
+  border: 1.5px solid white;
   border-radius: 2px;
   background: transparent;
 }
@@ -220,8 +217,8 @@ header .badge {
 .inline-editor.open { display:block; }
 .editor-grid {
   display:grid;
-  grid-template-columns: repeat(6, 1fr);
-  gap:10px;
+  grid-template-columns: repeat(4, 1fr);
+  gap:8px;
 }
 @media (max-width: 720px){
   .editor-grid { grid-template-columns: repeat(2, 1fr); }
@@ -232,6 +229,9 @@ header .badge {
   border:1px solid var(--border);
   border-radius:10px;
   padding:10px;
+}
+.ed-field.full-width {
+  grid-column: 1 / -1;
 }
 .ed-label {
   color: var(--muted);
@@ -302,23 +302,28 @@ input[type="color"]{ width:44px; height:34px; padding:0; }
   border-radius:14px;
   position:relative;
   flex: 1;
-  display:grid;
-  place-items:center;
+  display:flex;
+  align-items:flex-start;
+  justify-content:flex-start;
   overflow:hidden;
   min-height: 0;
+  padding: 14px;
 }
 @media (max-width: 900px) { 
   .canvas-wrap { 
     min-height: 70vh; 
     margin: 0;
+    padding: 14px;
   }
   .nail-stage { 
-    width: min(320px, 85vw); 
-    height: min(400px, 65vh); 
+    width: auto;
+    height: auto;
+    max-width: min(320px, 85vw);
+    max-height: min(400px, 65vh);
   }
 }
 
-.nail-stage { width: min(300px, 80vw); height: min(400px, 60vh); position:relative; }
+.nail-stage { width: auto; height: auto; max-width: 300px; max-height: 450px; position:relative; }
 .nail-stage svg { width:100%; height:100%; display:block; }
 
 .control-row {
@@ -347,13 +352,13 @@ input[type="color"]{ width:44px; height:34px; padding:0; }
 .color-chips {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: 4px;
 }
 
 .color-chip {
-  width: 28px;
-  height: 28px;
-  border-radius: 6px;
+  width: 22px;
+  height: 22px;
+  border-radius: 5px;
   border: 2px solid var(--border);
   cursor: pointer;
   display: flex;
@@ -375,9 +380,10 @@ input[type="color"]{ width:44px; height:34px; padding:0; }
 
 .color-chip.custom {
   background: linear-gradient(45deg, #ff4444 25%, #44ff44 25%, #44ff44 50%, #4488ff 50%, #4488ff 75%, #ffdd44 75%);
-  background-size: 8px 8px;
+  background-size: 6px 6px;
   color: white;
   font-weight: bold;
+  font-size: 8px;
   text-shadow: 0 1px 2px rgba(0,0,0,0.8);
 }
 

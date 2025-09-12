@@ -9,11 +9,17 @@ let nailBaseCustomized = false; // Track if user has customized nail base
 const glitterOpacity = 1.0; // full opacity with color variation for realism
 const densityMax = 100;
 
+// External SVG elements
+let externalSVG = null;
+let fingerElement = null;
+let nailElement = null;
+
 // DOM refs
 const stage = el('#stage');
 const addRandomBtn = el('#add-random');
 const clearBtn = el('#clear-mix');
 const rerollBtn = el('#reroll');
+const forceRefreshBtn = el('#force-refresh');
 const exportBtn = el('#export-json');
 const importBtn = el('#import-json');
 const randomizeBtn = el('#randomize');
@@ -36,20 +42,87 @@ const presetColors = [
   { name: 'Violet', color: '#aa44ff' },
   { name: 'White', color: '#ffffff' },
   { name: 'Black', color: '#222222' },
+  { name: 'Grey', color: '#888888' },
   { name: 'Pink', color: '#ff66aa' }
 ];
 
-// Skin tone presets - realistic human skin colors
+// Skin tone presets
 const skinTones = [
-  { name: 'Fair', color: '#f1d2c5', nailDefault: '#f3d9cf' },
-  { name: 'Light', color: '#e8c5a0', nailDefault: '#e5c7a6' },
-  { name: 'Medium', color: '#d4a574', nailDefault: '#d1a673' },
-  { name: 'Olive', color: '#c69c6d', nailDefault: '#c49960' },
-  { name: 'Tan', color: '#b08556', nailDefault: '#ad7f4e' },
-  { name: 'Deep', color: '#8b6914', nailDefault: '#886420' },
-  { name: 'Rich', color: '#6d4c07', nailDefault: '#6b4712' },
-  { name: 'Dark', color: '#4a3728', nailDefault: '#493425' }
+  { name: 'Baby Pink', color: '#F1CABF', nailDefault: '#f3d9cf' },
+  { name: 'Pale Pink', color: '#F9E2DB', nailDefault: '#fbe8e0' },
+  { name: 'Tan', color: '#DAAE94', nailDefault: '#dcb598' },
+  { name: 'Camel', color: '#C18D6A', nailDefault: '#c59370' },
+  { name: 'Crayola Brown', color: '#A7613F', nailDefault: '#aa6644' },
+  { name: 'Cologne Earth', color: '#623D33', nailDefault: '#66433a' }
 ];
+
+// Load external SVG
+async function loadExternalSVG() {
+  try {
+    const response = await fetch('./finger-nail.svg');
+    const svgText = await response.text();
+    const parser = new DOMParser();
+    externalSVG = parser.parseFromString(svgText, 'image/svg+xml');
+    
+    // Extract finger and nail elements - look for path elements
+    const paths = externalSVG.querySelectorAll('path');
+    
+    // Try to identify finger and nail based on Inkscape labels first
+    for (const path of paths) {
+      const label = path.getAttribute('inkscape:label') || path.getAttribute('id');
+      const style = path.getAttribute('style') || '';
+      
+      // Skip hidden elements
+      if (style.includes('display:none')) continue;
+      
+      if (label && label.toLowerCase().includes('finger')) {
+        fingerElement = path.cloneNode(true);
+        console.log('Found finger element by label:', label);
+      } else if (label && label.toLowerCase().includes('nail')) {
+        nailElement = path.cloneNode(true);
+        console.log('Found nail element by label:', label);
+      }
+    }
+    
+    // Fallback: try to identify by path content if labels didn't work
+    if (!fingerElement || !nailElement) {
+      for (const path of paths) {
+        const d = path.getAttribute('d');
+        const style = path.getAttribute('style') || '';
+        if (!d || style.includes('display:none')) continue;
+        
+        if (!fingerElement && (d.includes('450') || d.includes('220'))) {
+          fingerElement = path.cloneNode(true);
+          console.log('Found finger element by path content');
+        } else if (!nailElement && (d.includes('154') || d.includes('116'))) {
+          nailElement = path.cloneNode(true);
+          console.log('Found nail element by path content');
+        }
+      }
+    }
+    
+    // Final fallback: use visible paths
+    if (!fingerElement || !nailElement) {
+      const visiblePaths = Array.from(paths).filter(path => {
+        const style = path.getAttribute('style') || '';
+        return !style.includes('display:none');
+      });
+      
+      if (visiblePaths.length >= 2) {
+        if (!fingerElement) fingerElement = visiblePaths[0].cloneNode(true);
+        if (!nailElement) nailElement = visiblePaths[1].cloneNode(true);
+      }
+    }
+    
+    console.log('Loaded external SVG with', fingerElement ? 'finger' : 'no finger', 'and', nailElement ? 'nail' : 'no nail');
+    
+  } catch (error) {
+    console.warn('Could not load external SVG, falling back to original:', error);
+    externalSVG = null;
+    fingerElement = null;
+    nailElement = null;
+  }
+}
 
 // Helpers
 function autoName(shape, sizeIn){
@@ -107,8 +180,33 @@ function render(){
   svg.style.width = '100%';
   svg.style.height = '100%';
 
-  // defs: glitter drop shadow
+  // defs: glitter drop shadow and nail edge shadow
   const defs = document.createElementNS(svgNS, 'defs');
+
+  // Import any defs from the external SVG (gradients, patterns, etc.)
+  if (externalSVG) {
+    const externalDefs = externalSVG.querySelector('defs');
+    if (externalDefs) {
+      // Copy all children from external defs, except conflicting clip paths
+      for (const child of externalDefs.children) {
+        // Skip importing the external nail-clip to avoid conflicts
+        if (child.tagName === 'clipPath' && child.id === 'nail-clip') {
+          continue;
+        }
+        const importedNode = document.importNode(child, true);
+        defs.appendChild(importedNode);
+      }
+    }
+    
+    // Also copy any script elements (mesh polyfill)
+    const scripts = externalSVG.querySelectorAll('script');
+    if (scripts.length > 0) {
+      for (const script of scripts) {
+        const importedScript = document.importNode(script, true);
+        svg.appendChild(importedScript);
+      }
+    }
+  }
 
   // Drop shadow filter that each piece can use so layering shows
   /* COMMENTED OUT - DROP SHADOW DISABLED
@@ -133,52 +231,88 @@ function render(){
   defs.appendChild(filt);
   */
 
+
   // Clip path for nail
   const clip = document.createElementNS(svgNS, 'clipPath');
   clip.setAttribute('id', 'nail-clip');
-  const nailClip = document.createElementNS(svgNS,'path');
-  nailClip.setAttribute('d', `
-    M 95 154
-    Q 150 120 205 154
-    L 205 291
-    Q 150 325 95 291
-    Z
-  `);
-  clip.appendChild(nailClip);
+  
+  // Always use the nail element path for clipping if available
+  if (nailElement && nailElement.getAttribute('d')) {
+    const nailClip = document.createElementNS(svgNS,'path');
+    const nailPath = nailElement.getAttribute('d');
+    nailClip.setAttribute('d', nailPath);
+    clip.appendChild(nailClip);
+  } else {
+    // Fallback to original clip path
+    const nailClip = document.createElementNS(svgNS,'path');
+    nailClip.setAttribute('d', `
+      M 95 154
+      Q 150 120 205 154
+      L 205 291
+      Q 150 325 95 291
+      Z
+    `);
+    clip.appendChild(nailClip);
+  }
   defs.appendChild(clip);
   svg.appendChild(defs);
 
   // Finger and nail
   const group = document.createElementNS(svgNS,'g');
 
-  const finger = document.createElementNS(svgNS,'path');
-  finger.setAttribute('d', `
-    M 150 450
-    L 50 450
-    L 50 220
-    C 50 120, 80 70, 150 70
-    C 220 70, 250 120, 250 220
-    L 250 450
-    L 150 450
-    Z
-  `);
-  finger.setAttribute('fill', skinTone);
-  finger.setAttribute('stroke', 'rgba(0,0,0,0.08)');
-  finger.setAttribute('stroke-width', '2');
-  group.appendChild(finger);
+  // Use external finger element if available, otherwise fallback to original
+  if (fingerElement) {
+    const finger = document.importNode(fingerElement, true);
+    // Update the fill color to use current skin tone, overriding any style
+    finger.setAttribute('fill', skinTone);
+    finger.setAttribute('style', `fill:${skinTone};fill-opacity:1;stroke:none;stroke-opacity:1`);
+    group.appendChild(finger);
+  } else {
+    // Fallback to original finger
+    const finger = document.createElementNS(svgNS,'path');
+    finger.setAttribute('d', `
+      M 150 450
+      L 50 450
+      L 50 220
+      C 50 120, 80 70, 150 70
+      C 220 70, 250 120, 250 220
+      L 250 450
+      L 150 450
+      Z
+    `);
+    finger.setAttribute('fill', skinTone);
+    finger.setAttribute('stroke', 'rgba(0,0,0,0.08)');
+    finger.setAttribute('stroke-width', '2');
+    group.appendChild(finger);
+  }
 
-  const nail = document.createElementNS(svgNS,'path');
-  nail.setAttribute('d', `
-    M 95 154
-    Q 150 120 205 154
-    L 205 291
-    Q 150 325 95 291
-    Z
-  `);
-  nail.setAttribute('fill', nailBase);
-  nail.setAttribute('stroke', 'rgba(0,0,0,0.08)');
-  nail.setAttribute('stroke-width', '1.5');
-  group.appendChild(nail);
+  // Use external nail element if available, otherwise fallback to original
+  if (nailElement) {
+    const nail = document.importNode(nailElement, true);
+    // Update the fill color to use current nail base (but preserve any gradients)
+    const currentFill = nail.getAttribute('fill');
+    const currentStyle = nail.getAttribute('style') || '';
+    
+    // Only override fill if it's not using a gradient/pattern
+    if (!currentFill || (currentFill.startsWith('#') && !currentStyle.includes('fill:url('))) {
+      nail.setAttribute('fill', nailBase);
+    }
+    group.appendChild(nail);
+  } else {
+    // Fallback to original nail
+    const nail = document.createElementNS(svgNS,'path');
+    nail.setAttribute('d', `
+      M 95 154
+      Q 150 120 205 154
+      L 205 291
+      Q 150 325 95 291
+      Z
+    `);
+    nail.setAttribute('fill', nailBase);
+    nail.setAttribute('stroke', 'rgba(0,0,0,0.08)');
+    nail.setAttribute('stroke-width', '1.5');
+    group.appendChild(nail);
+  }
 
   svg.appendChild(group);
 
@@ -186,15 +320,45 @@ function render(){
   const glitterLayer = document.createElementNS(svgNS,'g');
   glitterLayer.setAttribute('clip-path','url(#nail-clip)');
 
-  const nailBox = {x: 95, y: 120, w: 110, h: 205}; // actual nail dimensions: 0.9mm x 1.4mm
+  // Calculate nail bounding box from the external nail element if available
+  let nailBox;
+  if (nailElement) {
+    // Create a temporary SVG to calculate bounding box
+    const tempSVG = document.createElementNS(svgNS, 'svg');
+    tempSVG.style.position = 'absolute';
+    tempSVG.style.visibility = 'hidden';
+    tempSVG.setAttribute('width', '300');
+    tempSVG.setAttribute('height', '450');
+    tempSVG.setAttribute('viewBox', '0 0 300 450');
+    const tempNail = document.importNode(nailElement, true);
+    tempSVG.appendChild(tempNail);
+    document.body.appendChild(tempSVG);
+    
+    const bbox = tempNail.getBBox();
+    nailBox = {x: bbox.x, y: bbox.y, w: bbox.width, h: bbox.height};
+    
+    document.body.removeChild(tempSVG);
+    
+    // Add some padding to ensure glitter covers the full nail area
+    const padding = 5;
+    nailBox.x -= padding;
+    nailBox.y -= padding; 
+    nailBox.w += padding * 2;
+    nailBox.h += padding * 2;
+  } else {
+    // Fallback to original dimensions
+    nailBox = {x: 95, y: 120, w: 110, h: 205}; // actual nail dimensions: 0.354" x 0.567" (9mm x 14.4mm)
+  }
 
   function piecesFor(density, sizeIn){
-    // Use correct real-world scale: nail is 0.9mm (0.0354") wide = 110px
-    const pxPerIn = 110 / 0.0354; // 3104 pixels per inch - maintains true proportions
+    // Use dynamic scale based on actual nail width
+    const nailWidthInches = 0.354; // Standard nail width in inches
+    const pxPerIn = nailBox.w / nailWidthInches; // Dynamic pixels per inch based on actual nail width
     const sPx = Math.max(0.5, sizeIn * pxPerIn);
-    const basePieces = density * 3.2 * 10;
-    const sizeFactor = 16 / Math.pow(sPx * sPx + 6, 0.5);
-    return Math.round(basePieces * sizeFactor);
+    const basePieces = density * 3.2 * 1;
+    const sizeFactor = 16 / Math.pow(sPx * sPx + 6, 0.6);
+    // Generate extra pieces to compensate for clipping - about 50% more
+    return Math.round(basePieces * sizeFactor * 1.5);
   }
 
   function rng(seed){
@@ -212,46 +376,18 @@ function render(){
   
   for(const g of mix){
     const rand = rng(g.seed);
-    const pxPerIn = 110 / 0.5118;
+    const pxPerIn = nailBox.w / 0.354; // Dynamic pixels per inch - same as piecesFor function
     const sizePx = clamp(g.sizeIn * pxPerIn, 0.5, 30);
     const count = piecesFor(g.density, g.sizeIn);
 
     for(let i=0;i<count;i++){
-      // Generate coordinates that better fit the nail shape
-      // Use rejection sampling to get better distribution
-      let x, y, nailWidth;
-      let attempts = 0;
-      const centerX = 150; // nail center X coordinate
+      // Generate coordinates within the nail bounding box
+      // For complex nail shapes, rely on clipping rather than rejection sampling
+      const u = rand();
+      const v = rand();
+      const x = nailBox.x + (u) * nailBox.w;
+      const y = nailBox.y + (v) * nailBox.h;
       
-      do {
-        const u = rand();
-        const v = rand();
-        x = nailBox.x + (u) * nailBox.w;
-        y = nailBox.y + (v) * nailBox.h;
-        
-        // Simple nail shape approximation for better distribution
-        const normalizedY = (y - 80) / 280; // 0 at top, 1 at bottom
-        
-        if (normalizedY < 0.125) { // top curved part (y: 80-120)
-          const curveProgress = normalizedY / 0.125;
-          nailWidth = 55 * (0.3 + 0.7 * curveProgress); // narrow at top, wider moving down
-        } else if (normalizedY > 0.875) { // bottom curved part (y: 360-400)
-          const curveProgress = (1 - normalizedY) / 0.125;
-          nailWidth = 55 * (0.3 + 0.7 * curveProgress); // narrow at bottom, wider moving up
-        } else { // middle straight part
-          nailWidth = 55;
-        }
-        
-        attempts++;
-      } while (Math.abs(x - centerX) > nailWidth && attempts < 20);
-      
-      // Fallback to original method if rejection sampling fails
-      if (attempts >= 20) {
-        const u = rand();
-        const v = rand();
-        x = nailBox.x + (u) * nailBox.w;
-        y = nailBox.y + (v) * nailBox.h;
-      }
       const rot = rand() * Math.PI * 2;
       const zOrder = rand(); // Random z-order for this piece
 
@@ -274,6 +410,16 @@ function render(){
         shapeEl.setAttribute('height', s.toFixed(2));
         shapeEl.setAttribute('transform', `rotate(${(rot*57.2958).toFixed(2)} ${x.toFixed(2)} ${y.toFixed(2)})`);
         shapeEl.setAttribute('rx', (Math.min(2, s*0.2)).toFixed(2));
+      } else if(g.shape === 'slice'){
+        shapeEl = document.createElementNS(svgNS,'rect');
+        const length = sizePx;
+        const width = sizePx / 5; // 1:5 ratio
+        shapeEl.setAttribute('x', (x - length/2).toFixed(2));
+        shapeEl.setAttribute('y', (y - width/2).toFixed(2));
+        shapeEl.setAttribute('width', length.toFixed(2));
+        shapeEl.setAttribute('height', width.toFixed(2));
+        shapeEl.setAttribute('transform', `rotate(${(rot*57.2958).toFixed(2)} ${x.toFixed(2)} ${y.toFixed(2)})`);
+        shapeEl.setAttribute('rx', (Math.min(1, width*0.3)).toFixed(2));
       } else {
         // hexagon
         shapeEl = document.createElementNS(svgNS,'polygon');
@@ -340,6 +486,15 @@ function createShapeButton(shape, size = 20) {
     shapeEl.setAttribute('width', rectSize);
     shapeEl.setAttribute('height', rectSize);
     shapeEl.setAttribute('rx', 1);
+  } else if (shape === 'slice') {
+    shapeEl = document.createElementNS(svgNS, 'rect');
+    const length = size - 6;
+    const width = (size - 6) / 5;
+    shapeEl.setAttribute('x', (center - length/2));
+    shapeEl.setAttribute('y', (center - width/2));
+    shapeEl.setAttribute('width', length);
+    shapeEl.setAttribute('height', width);
+    shapeEl.setAttribute('rx', 1);
   } else { // hex
     shapeEl = document.createElementNS(svgNS, 'polygon');
     const r = center - 3;
@@ -386,6 +541,15 @@ function createShapeSwatch(shape, color) {
     shapeEl.setAttribute('width', rectSize);
     shapeEl.setAttribute('height', rectSize);
     shapeEl.setAttribute('rx', 2);
+  } else if (shape === 'slice') {
+    shapeEl = document.createElementNS(svgNS, 'rect');
+    const length = size - 4;
+    const width = (size - 4) / 5;
+    shapeEl.setAttribute('x', (center - length/2));
+    shapeEl.setAttribute('y', (center - width/2));
+    shapeEl.setAttribute('width', length);
+    shapeEl.setAttribute('height', width);
+    shapeEl.setAttribute('rx', 1);
   } else { // hex
     shapeEl = document.createElementNS(svgNS, 'polygon');
     const r = center - 2;
@@ -441,7 +605,13 @@ function refreshList(){
           <button class="duplicate" title="Duplicate" aria-label="Duplicate glitter" data-action="duplicate">
             <div class="copy-icon"></div>
           </button>
-          <button class="trash" title="Remove" aria-label="Remove glitter" data-action="remove">🗑️</button>
+          <button class="trash" title="Remove" aria-label="Remove glitter" data-action="remove">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 6h18"></path>
+              <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
+              <path d="M8 6V4c0-1 1-2 2-2h4c0 1 1 2 0 2v2"></path>
+            </svg>
+          </button>
         </div>
       </div>
 
@@ -459,6 +629,9 @@ function refreshList(){
               <button class="shape-btn${g.shape==='hex'?' active':''}" data-shape="hex" type="button">
                 ${createShapeButton('hex')}
               </button>
+              <button class="shape-btn${g.shape==='slice'?' active':''}" data-shape="slice" type="button">
+                ${createShapeButton('slice')}
+              </button>
             </div>
           </div>
           <div class="ed-field">
@@ -467,6 +640,11 @@ function refreshList(){
             <div class="legend"><span id="size-val-${g.id}">${g.sizeIn.toFixed(3)}"</span></div>
           </div>
           <div class="ed-field">
+            <label class="ed-label" for="density-${g.id}">Density</label>
+            <input id="density-${g.id}" type="range" min="1" max="${densityMax}" step="1" value="${g.density}" />
+            <div class="legend"><span id="density-val-${g.id}">${g.density}</span></div>
+          </div>
+          <div class="ed-field full-width">
             <label class="ed-label">Color</label>
             <div class="color-chips" data-color-group="${g.id}">
               ${presetColors.map(c => `
@@ -478,18 +656,13 @@ function refreshList(){
               <div class="color-chip custom${!presetColors.some(c => c.color.toLowerCase() === g.color.toLowerCase()) ? ' active' : ''}" 
                    data-color="custom" 
                    title="Custom color">
-                <span style="font-size: 10px; font-weight: bold;">?</span>
+                <span>?</span>
               </div>
             </div>
             <div class="custom-color-row" style="display: ${!presetColors.some(c => c.color.toLowerCase() === g.color.toLowerCase()) ? 'flex' : 'none'}; gap: 8px; margin-top: 8px; align-items: center;">
               <input id="color-${g.id}" type="color" value="${g.color}" style="flex-shrink: 0;" />
               <input id="colorhex-${g.id}" type="text" value="${g.color}" style="flex: 1;" />
             </div>
-          </div>
-          <div class="ed-field">
-            <label class="ed-label" for="density-${g.id}">Density</label>
-            <input id="density-${g.id}" type="range" min="1" max="${densityMax}" step="1" value="${g.density}" />
-            <div class="legend"><span id="density-val-${g.id}">${g.density}</span></div>
           </div>
         </div>
       </div>
@@ -649,7 +822,7 @@ function refreshMiniMeta(chip, g){
 
 // Create randomized glitter and expand it
 function addRandomGlitter(open=true){
-  const shapes = ['circle','square','hex'];
+  const shapes = ['circle','square','hex','slice'];
   const shape = shapes[Math.floor(Math.random()*shapes.length)];
   const sizeIn = availableSizes[Math.floor(Math.random()*availableSizes.length)];
   const hue = Math.floor(Math.random()*360);
@@ -689,6 +862,10 @@ clearBtn.addEventListener('click', () => {
 rerollBtn.addEventListener('click', () => {
   mix = mix.map(g => ({...g, seed: (g.seed + Math.floor(Math.random()*1000) + 1)|0}));
   render();
+});
+forceRefreshBtn.addEventListener('click', () => {
+  render();
+  refreshList();
 });
 exportBtn.addEventListener('click', () => {
   const payload = JSON.stringify({baseColor: nailBase, mix}, null, 2);
@@ -770,10 +947,22 @@ baseColorHex.addEventListener('input', () => {
 });
 
 // Initialize
-nailBase = normalizeHex(baseColor.value);
-initializeSkinTones();
-// Seed with one randomized glitter and open it
-addRandomGlitter(true);
+async function initialize() {
+  nailBase = normalizeHex(baseColor.value);
+  initializeSkinTones();
+  
+  // Load external SVG first
+  await loadExternalSVG();
+  
+  // Initial render
+  render();
+  
+  // Seed with one randomized glitter and open it
+  addRandomGlitter(true);
+}
+
+// Start initialization
+initialize();
 
 // Ensure render on size changes
 const ro = new ResizeObserver(() => render());
