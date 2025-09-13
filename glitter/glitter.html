@@ -7,26 +7,13 @@
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <header>
-    <h1><span class="logo">G</span> Glitter Mixer v0 <span class="badge">alpha</span></h1>
-  </header>
-
   <main class="wrap">
     <!-- Left: Preview -->
-    <section class="panel">
-      <h2>Preview</h2>
-      <div class="preview">
-        <div class="preview-top">
-          <div class="row">
-            <button class="btn secondary" id="reroll">Reroll placement</button>
-            <button class="btn secondary" id="force-refresh">Force refresh</button>
-          </div>
-        </div>
-        <div class="canvas-wrap">
-          <div class="nail-stage" id="stage" aria-label="Nail preview area"></div>
-        </div>
+    <div class="preview">
+      <div class="canvas-wrap">
+        <div class="nail-stage" id="stage" aria-label="Nail preview area"></div>
       </div>
-    </section>
+    </div>
 
     <!-- Right: Controls (no persistent add form) -->
     <section class="panel" aria-label="Glitter controls">
@@ -52,12 +39,17 @@
         <h2>Current mix</h2>
         <div class="row" style="padding: 0 14px 14px;">
           <button class="btn secondary" id="randomize">Randomize mix</button>
-          <button class="btn secondary" id="export-json">Export JSON</button>
-          <button class="btn secondary" id="import-json">Import JSON</button>
           <button class="btn warn" id="clear-mix">Clear mix</button>
         </div>
 
         <div class="glitter-list" id="glitter-list" aria-live="polite"></div>
+        
+        <div class="row" style="padding: 0 14px 14px;">
+          <button class="btn secondary" id="reroll">Reroll placement</button>
+          <button class="btn secondary" id="force-refresh">Force refresh</button>
+          <button class="btn secondary" id="export-json">Export JSON</button>
+          <button class="btn secondary" id="import-json">Import JSON</button>
+        </div>
       </div>
     </section>
   </main>

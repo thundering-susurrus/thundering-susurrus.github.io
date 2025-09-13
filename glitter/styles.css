@@ -53,13 +53,13 @@ header .badge {
   display:grid;
   grid-template-columns: 1fr 1.05fr;
   gap: clamp(10px, 2.8vw, 26px);
-  padding: clamp(12px, 3vw, 28px);
+  padding: clamp(4px, 3vw, 8px);
 }
 @media (max-width: 900px) {
   .wrap { 
     grid-template-columns: 1fr; 
     gap: 16px;
-    padding: 16px;
+    padding: 4px;
   }
   body {
     overflow-x: hidden;
@@ -305,7 +305,6 @@ input[type="color"]{ width:44px; height:34px; padding:0; }
   align-items:center;
   justify-content:center;
   overflow:hidden;
-  padding: 14px;
   width: fit-content;
   height: fit-content;
   margin: 0 auto;
@@ -313,7 +312,6 @@ input[type="color"]{ width:44px; height:34px; padding:0; }
 @media (max-width: 900px) { 
   .canvas-wrap { 
     margin: 0;
-    padding: 14px;
   }
   .nail-stage { 
     width: auto;
