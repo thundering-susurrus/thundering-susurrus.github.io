@@ -12,12 +12,28 @@
   </header>
 
   <main class="wrap">
-    <!-- Left: Controls (no persistent add form) -->
+    <!-- Left: Preview -->
+    <section class="panel">
+      <h2>Preview</h2>
+      <div class="preview">
+        <div class="preview-top">
+          <div class="row">
+            <button class="btn secondary" id="reroll">Reroll placement</button>
+            <button class="btn secondary" id="force-refresh">Force refresh</button>
+          </div>
+        </div>
+        <div class="canvas-wrap">
+          <div class="nail-stage" id="stage" aria-label="Nail preview area"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Right: Controls (no persistent add form) -->
     <section class="panel" aria-label="Glitter controls">
       <h2>Mix controls</h2>
       <div class="controls" id="controls">
         <div class="row control-top" >
-          <button class="btn" id="add-random">+ Add randomized glitter</button>
+          <button class="btn" id="add-random">+ Add glitter</button>
           <div class="control-row skin-control">
             <div class="label">Skin tone</div>
             <div class="skin-tone-chips" id="skin-tone-chips">
@@ -42,22 +58,6 @@
         </div>
 
         <div class="glitter-list" id="glitter-list" aria-live="polite"></div>
-      </div>
-    </section>
-
-    <!-- Right: Preview -->
-    <section class="panel">
-      <h2>Preview</h2>
-      <div class="preview">
-        <div class="preview-top">
-          <div class="row">
-            <button class="btn secondary" id="reroll">Reroll placement</button>
-            <button class="btn secondary" id="force-refresh">Force refresh</button>
-          </div>
-        </div>
-        <div class="canvas-wrap">
-          <div class="nail-stage" id="stage" aria-label="Nail preview area"></div>
-        </div>
       </div>
     </section>
   </main>

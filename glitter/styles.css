@@ -51,7 +51,7 @@ header .badge {
 
 .wrap {
   display:grid;
-  grid-template-columns: 1.05fr 1fr;
+  grid-template-columns: 1fr 1.05fr;
   gap: clamp(10px, 2.8vw, 26px);
   padding: clamp(12px, 3vw, 28px);
 }
@@ -301,17 +301,17 @@ input[type="color"]{ width:44px; height:34px; padding:0; }
   border:1px solid var(--border);
   border-radius:14px;
   position:relative;
-  flex: 1;
   display:flex;
-  align-items:flex-start;
-  justify-content:flex-start;
+  align-items:center;
+  justify-content:center;
   overflow:hidden;
-  min-height: 0;
   padding: 14px;
+  width: fit-content;
+  height: fit-content;
+  margin: 0 auto;
 }
 @media (max-width: 900px) { 
   .canvas-wrap { 
-    min-height: 70vh; 
     margin: 0;
     padding: 14px;
   }
@@ -323,18 +323,17 @@ input[type="color"]{ width:44px; height:34px; padding:0; }
   }
 }
 
-.nail-stage { width: auto; height: auto; max-width: 300px; max-height: 450px; position:relative; }
+.nail-stage { width: 240px; height: 300px; position:relative; }
 .nail-stage svg { width:100%; height:100%; display:block; }
 
 .control-row {
-  display:grid;
-  grid-template-columns: 110px 1fr;
-  align-items:center;
-  gap:12px;
+  display:flex;
+  flex-direction:column;
+  gap:4px;
   background: var(--panel-2);
   border:1px solid var(--border);
-  border-radius:10px;
-  padding:10px;
+  border-radius:8px;
+  padding:8px;
 }
 .label {
   color: var(--muted);
@@ -345,9 +344,9 @@ input[type="color"]{ width:44px; height:34px; padding:0; }
 .legend { color: var(--muted); font-size:12px; display:flex; gap:12px; flex-wrap:wrap; }
 .legend .dot { width:10px; height:10px; border-radius:50%; display:inline-block; margin-right:6px; border:1px solid var(--border); }
 
-.control-top { justify-content:space-between; align-items:center; flex-wrap:wrap; }
-.skin-control { flex:1; max-width:420px; }
-.base-control { flex:1; max-width:420px; }
+.control-top { justify-content:space-between; align-items:flex-start; flex-wrap:nowrap; gap:8px; }
+.skin-control { flex:1; min-width:0; }
+.base-control { flex:1; min-width:0; }
 
 .color-chips {
   display: flex;
@@ -390,13 +389,13 @@ input[type="color"]{ width:44px; height:34px; padding:0; }
 .skin-tone-chips {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: 4px;
 }
 
 .skin-tone-chip {
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
   border: 2px solid var(--border);
   cursor: pointer;
   transition: all 0.15s ease;

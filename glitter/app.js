@@ -155,11 +155,11 @@ function initializeSkinTones() {
       // Update skin tone
       skinTone = tone.color;
       
-      // Update nail base only if not customized
+      // Update nail base UI only if not customized (but don't update nailBase itself since we calculate it dynamically)
       if (!nailBaseCustomized) {
-        nailBase = tone.nailDefault;
-        baseColor.value = nailBase;
-        baseColorHex.value = nailBase;
+        const lighterNail = shadeHex(skinTone, 0.05);
+        baseColor.value = lighterNail;
+        baseColorHex.value = lighterNail;
       }
       
       render();
@@ -174,7 +174,7 @@ function render(){
   stage.innerHTML = '';
   const svgNS = 'http://www.w3.org/2000/svg';
   const svg = document.createElementNS(svgNS, 'svg');
-  svg.setAttribute('viewBox', `0 0 300 450`);
+  svg.setAttribute('viewBox', `50 0 200 250`);
   svg.setAttribute('role','img');
   svg.setAttribute('aria-label','Fingernail with glitter preview');
   svg.style.width = '100%';
@@ -289,14 +289,10 @@ function render(){
   // Use external nail element if available, otherwise fallback to original
   if (nailElement) {
     const nail = document.importNode(nailElement, true);
-    // Update the fill color to use current nail base (but preserve any gradients)
-    const currentFill = nail.getAttribute('fill');
-    const currentStyle = nail.getAttribute('style') || '';
-    
-    // Only override fill if it's not using a gradient/pattern
-    if (!currentFill || (currentFill.startsWith('#') && !currentStyle.includes('fill:url('))) {
-      nail.setAttribute('fill', nailBase);
-    }
+    // Use nail base if customized, otherwise use lightened skin tone
+    const nailColor = nailBaseCustomized ? nailBase : shadeHex(skinTone, 0.05);
+    nail.setAttribute('fill', nailColor);
+    nail.setAttribute('style', `fill:${nailColor};fill-opacity:1;stroke:none;stroke-opacity:1`);
     group.appendChild(nail);
   } else {
     // Fallback to original nail
@@ -308,7 +304,9 @@ function render(){
       Q 150 325 95 291
       Z
     `);
-    nail.setAttribute('fill', nailBase);
+    // Use nail base if customized, otherwise use lightened skin tone
+    const nailColor = nailBaseCustomized ? nailBase : shadeHex(skinTone, 0.05);
+    nail.setAttribute('fill', nailColor);
     nail.setAttribute('stroke', 'rgba(0,0,0,0.08)');
     nail.setAttribute('stroke-width', '1.5');
     group.appendChild(nail);
@@ -948,8 +946,17 @@ baseColorHex.addEventListener('input', () => {
 
 // Initialize
 async function initialize() {
-  nailBase = normalizeHex(baseColor.value);
   initializeSkinTones();
+  
+  // Set initial nail base UI to match lightened skin tone if not customized
+  if (!nailBaseCustomized) {
+    const lighterNail = shadeHex(skinTone, 0.05);
+    baseColor.value = lighterNail;
+    baseColorHex.value = lighterNail;
+    nailBase = lighterNail;
+  } else {
+    nailBase = normalizeHex(baseColor.value);
+  }
   
   // Load external SVG first
   await loadExternalSVG();
