@@ -1,4 +1,4 @@
-import { clamp, el, normalizeHex, capitalize, escapeHtml, hslToHex, shadeHex, jitterHex } from './utils.js';
+import { clamp, el, normalizeHex, capitalize, escapeHtml, hexToHsl, hslToHex, shadeHex, jitterHex, poissonDiscSampling } from './utils.js';
 
 // State
 let mix = []; // {id, name, shape, sizeIn, color, density, seed}
@@ -6,6 +6,8 @@ let seedCounter = 1;
 let nailBase = '#f3d9cf';
 let skinTone = '#f1d2c5';
 let nailBaseCustomized = false; // Track if user has customized nail base
+let usePoissonDistribution = false; // Toggle between Poisson and uniform random distribution
+let useValidGlittersOnly = false; // Toggle to restrict to valid glitter combinations
 const glitterOpacity = 1.0; // full opacity with color variation for realism
 const densityMax = 100;
 
@@ -27,24 +29,556 @@ const baseColor = el('#base-color');
 const baseColorHex = el('#base-color-hex');
 const skinToneChips = el('#skin-tone-chips');
 const glitterList = el('#glitter-list');
+const distributionToggle = el('#distribution-toggle');
+const validGlittersToggle = el('#valid-glitters-toggle');
 
 // Available glitter sizes (in inches) - smallest to largest
 const availableSizes = [0.008, 0.015, 0.025, 0.035, 0.040, 0.062, 0.078, 0.094];
 
+// Valid glitter combinations loaded from glitter_options.json
+let validGlitters = [];
+
+// Load valid glitters data
+async function loadValidGlitters() {
+  try {
+    const response = await fetch('./glitter_options.json');
+    const data = await response.json();
+    validGlitters = data;
+    console.log('Loaded', validGlitters.length, 'valid glitter combinations');
+  } catch (error) {
+    console.warn('Could not load valid glitters data:', error);
+    validGlitters = [];
+  }
+}
+
+// Function to normalize color names for comparison
+function normalizeColorName(color) {
+  return color.toLowerCase().trim().replace(/\s+/g, ' ');
+}
+
+// Function to normalize shape names for comparison (map app shapes to data shapes)
+function normalizeShapeName(shape) {
+  const shapeMap = {
+    'hex': 'hex',
+    'hexagon': 'hex',
+    'circle': 'dot',
+    'dot': 'dot',
+    'square': 'square',
+    'slice': 'slice' // May not exist in data, but keeping for completeness
+  };
+  return shapeMap[shape.toLowerCase()] || shape.toLowerCase();
+}
+
+// Function to check if a glitter combination is valid
+function isValidGlitterCombination(color, shape, sizeIn) {
+  if (!useValidGlittersOnly || validGlitters.length === 0) {
+    return true; // If toggle is off or no data loaded, allow all combinations
+  }
+  
+  const colorName = getColorName(color);
+  const normalizedColor = normalizeColorName(colorName);
+  const normalizedShape = normalizeShapeName(shape);
+  const sizeStr = sizeIn.toFixed(3);
+  
+  return validGlitters.some(glitter => {
+    const glitterColor = normalizeColorName(glitter.color);
+    const glitterShape = normalizeShapeName(glitter.glitter_shape);
+    const glitterSize = glitter.glitter_size;
+    
+    return glitterColor === normalizedColor && 
+           glitterShape === normalizedShape && 
+           glitterSize === sizeStr;
+  });
+}
+
+// Function to get all valid combinations for randomization
+function getValidGlitterCombinations() {
+  if (!useValidGlittersOnly || validGlitters.length === 0) {
+    // Return all possible combinations if toggle is off or no data
+    const allCombinations = [];
+    const shapes = ['circle', 'square', 'hex']; // Don't include slice as it may not be in valid data
+    
+    for (const colorObj of presetColors) {
+      for (const shape of shapes) {
+        for (const size of availableSizes) {
+          allCombinations.push({
+            color: colorObj.color,
+            shape: shape,
+            sizeIn: size
+          });
+        }
+      }
+    }
+    return allCombinations;
+  }
+  
+  // Return only valid combinations from the data
+  const validCombinations = [];
+  
+  for (const glitter of validGlitters) {
+    // Find matching color in presetColors
+    const normalizedDataColor = normalizeColorName(glitter.color);
+    const matchingColor = presetColors.find(c => 
+      normalizeColorName(c.name) === normalizedDataColor
+    );
+    
+    if (matchingColor) {
+      // Map data shape back to app shape
+      const shapeMap = {
+        'hex': 'hex',
+        'dot': 'circle',
+        'square': 'square'
+      };
+      const appShape = shapeMap[glitter.glitter_shape.toLowerCase()];
+      
+      if (appShape) {
+        const size = parseFloat(glitter.glitter_size);
+        if (!isNaN(size)) {
+          validCombinations.push({
+            color: matchingColor.color,
+            shape: appShape,
+            sizeIn: size
+          });
+        }
+      }
+    }
+  }
+  
+  return validCombinations;
+}
+
+// Function to get valid shapes for a specific color
+function getValidShapesForColor(color) {
+  if (!useValidGlittersOnly || validGlitters.length === 0) {
+    return ['circle', 'square', 'hex', 'slice']; // All shapes are valid when toggle is off
+  }
+  
+  const colorName = getColorName(color);
+  const normalizedColor = normalizeColorName(colorName);
+  const validShapes = new Set();
+  
+  for (const glitter of validGlitters) {
+    const glitterColor = normalizeColorName(glitter.color);
+    if (glitterColor === normalizedColor) {
+      // Map data shape back to app shape
+      const shapeMap = {
+        'hex': 'hex',
+        'dot': 'circle',
+        'square': 'square'
+      };
+      const appShape = shapeMap[glitter.glitter_shape.toLowerCase()];
+      if (appShape) {
+        validShapes.add(appShape);
+      }
+    }
+  }
+  
+  return Array.from(validShapes);
+}
+
+// Function to get valid sizes for a specific color
+function getValidSizesForColor(color) {
+  if (!useValidGlittersOnly || validGlitters.length === 0) {
+    return availableSizes; // All sizes are valid when toggle is off
+  }
+  
+  const colorName = getColorName(color);
+  const normalizedColor = normalizeColorName(colorName);
+  const validSizes = new Set();
+  
+  for (const glitter of validGlitters) {
+    const glitterColor = normalizeColorName(glitter.color);
+    if (glitterColor === normalizedColor) {
+      const size = parseFloat(glitter.glitter_size);
+      if (!isNaN(size)) {
+        validSizes.add(size);
+      }
+    }
+  }
+  
+  return Array.from(validSizes).sort((a, b) => a - b);
+}
+
+// Function to get valid shapes for a specific (color, size) combination
+function getValidShapesForColorAndSize(color, sizeIn) {
+  if (!useValidGlittersOnly || validGlitters.length === 0) {
+    return ['circle', 'square', 'hex', 'slice']; // All shapes are valid when toggle is off
+  }
+  
+  const colorName = getColorName(color);
+  const normalizedColor = normalizeColorName(colorName);
+  const sizeStr = sizeIn.toFixed(3);
+  const validShapes = new Set();
+  
+  console.log('getValidShapesForColorAndSize debug:', {
+    color: color,
+    colorName: colorName,
+    normalizedColor: normalizedColor,
+    sizeIn: sizeIn,
+    sizeStr: sizeStr
+  });
+  
+  for (const glitter of validGlitters) {
+    const glitterColor = normalizeColorName(glitter.color);
+    const glitterSize = glitter.glitter_size;
+    
+    if (glitterColor === normalizedColor) {
+      // Normalize both sizes to numbers for comparison
+      const normalizedGlitterSize = parseFloat(glitterSize);
+      const normalizedSizeIn = parseFloat(sizeStr);
+      const sizeMatch = Math.abs(normalizedGlitterSize - normalizedSizeIn) < 0.0001; // Allow tiny floating point differences
+      
+      console.log('Color match found:', {
+        glitterColor: glitterColor,
+        glitterSize: glitterSize,
+        normalizedGlitterSize: normalizedGlitterSize,
+        sizeStr: sizeStr,
+        normalizedSizeIn: normalizedSizeIn,
+        sizeMatch: sizeMatch,
+        glitterShape: glitter.glitter_shape
+      });
+      
+      if (sizeMatch) {
+        // Map data shape back to app shape
+        const shapeMap = {
+          'hex': 'hex',
+          'dot': 'circle',
+          'square': 'square'
+        };
+        const appShape = shapeMap[glitter.glitter_shape.toLowerCase()];
+        if (appShape) {
+          validShapes.add(appShape);
+          console.log('Added valid shape:', appShape);
+        }
+      }
+    }
+  }
+  
+  console.log('getValidShapesForColorAndSize result:', Array.from(validShapes));
+  return Array.from(validShapes);
+}
+
+// Function to find the best valid combination for a color (prioritizing closest size, then shape preference)
+function findBestValidCombination(color, currentSize, preferredShape) {
+  if (!useValidGlittersOnly || validGlitters.length === 0) {
+    return { sizeIn: currentSize, shape: preferredShape };
+  }
+  
+  const colorName = getColorName(color);
+  const normalizedColor = normalizeColorName(colorName);
+  const validCombinations = [];
+  
+  // Get all valid combinations for this color
+  for (const glitter of validGlitters) {
+    const glitterColor = normalizeColorName(glitter.color);
+    if (glitterColor === normalizedColor) {
+      const size = parseFloat(glitter.glitter_size);
+      if (!isNaN(size)) {
+        // Map data shape back to app shape
+        const shapeMap = {
+          'hex': 'hex',
+          'dot': 'circle',
+          'square': 'square'
+        };
+        const appShape = shapeMap[glitter.glitter_shape.toLowerCase()];
+        if (appShape) {
+          validCombinations.push({
+            sizeIn: size,
+            shape: appShape
+          });
+        }
+      }
+    }
+  }
+  
+  console.log('findBestValidCombination:', {
+    color: color,
+    colorName: colorName,
+    normalizedColor: normalizedColor,
+    currentSize: currentSize,
+    preferredShape: preferredShape,
+    validCombinations: validCombinations
+  });
+  
+  if (validCombinations.length === 0) {
+    return { sizeIn: currentSize, shape: preferredShape };
+  }
+  
+  // Find the combination with closest size, preferring the current shape if possible
+  let bestCombo = validCombinations[0];
+  let bestScore = Infinity;
+  
+  for (const combo of validCombinations) {
+    const sizeDiff = Math.abs(combo.sizeIn - currentSize);
+    const shapeMatch = combo.shape === preferredShape ? 0 : 1; // 0 if shape matches, 1 if not
+    
+    // Score prioritizes size closeness first, then shape preference
+    const score = sizeDiff * 1000 + shapeMatch;
+    
+    if (score < bestScore) {
+      bestScore = score;
+      bestCombo = combo;
+    }
+  }
+  
+  console.log('findBestValidCombination result:', bestCombo);
+  return bestCombo;
+}
+
+// Function to update shape buttons for a glitter item
+function updateShapeButtons(chip, g) {
+  const shapeButtonsContainer = chip.querySelector('.shape-buttons');
+  if (!shapeButtonsContainer) return;
+  
+  const validShapes = getValidShapesForColorAndSize(g.color, g.sizeIn);
+  const allShapes = ['circle', 'square', 'hex', 'slice'];
+  
+  // Debug: Log what we're getting
+  console.log('updateShapeButtons:', {
+    color: g.color,
+    colorName: getColorName(g.color),
+    sizeIn: g.sizeIn,
+    currentShape: g.shape,
+    validShapes: validShapes,
+    useValidGlittersOnly: useValidGlittersOnly
+  });
+  
+  // Check if current shape is invalid and auto-select a valid one
+  if (useValidGlittersOnly && validShapes.length > 0 && !validShapes.includes(g.shape)) {
+    // Auto-select the first valid shape
+    const newShape = validShapes[0];
+    g.shape = newShape;
+    
+    // Update UI elements that depend on shape
+    const title = chip.querySelector('.title');
+    const swatch = chip.querySelector('.swatch');
+    if (title) title.textContent = generateTitle(g.color, g.shape, g.sizeIn);
+    if (swatch) swatch.innerHTML = createShapeSwatch(g.shape, g.color);
+    refreshMiniMeta(chip, g);
+    
+    // Update active shape button
+    allShapes.forEach(shape => {
+      const btn = shapeButtonsContainer.querySelector(`[data-shape="${shape}"]`);
+      if (btn) {
+        btn.classList.toggle('active', shape === newShape);
+      }
+    });
+    
+    // Re-render the nail preview
+    render();
+  }
+  
+  // Update each shape button
+  allShapes.forEach(shape => {
+    const btn = shapeButtonsContainer.querySelector(`[data-shape="${shape}"]`);
+    if (!btn) return;
+    
+    const isValid = validShapes.includes(shape);
+    const isCurrentShape = g.shape === shape;
+    
+    if (useValidGlittersOnly) {
+      if (!isValid) {
+        // Hide invalid shapes
+        btn.style.display = 'none';
+      } else {
+        // Show valid shapes
+        btn.style.display = 'inline-block';
+      }
+      
+      // Remove any invalid indicators since we auto-select valid shapes
+      btn.classList.remove('invalid-shape');
+      const indicator = btn.querySelector('.invalid-indicator');
+      if (indicator) indicator.remove();
+    } else {
+      // Show all shapes when toggle is off
+      btn.style.display = 'inline-block';
+      btn.classList.remove('invalid-shape');
+      const indicator = btn.querySelector('.invalid-indicator');
+      if (indicator) indicator.remove();
+    }
+  });
+}
+
+// Function to update size slider for a glitter item
+function updateSizeSlider(chip, g) {
+  const sizeInput = chip.querySelector(`#size-${g.id}`);
+  const sizeVal = chip.querySelector(`#size-val-${g.id}`);
+  if (!sizeInput || !sizeVal) return;
+  
+  const validSizes = getValidSizesForColor(g.color);
+  
+  // Check if current size is invalid and auto-select a valid one
+  if (useValidGlittersOnly && validSizes.length > 0 && !validSizes.includes(g.sizeIn)) {
+    // Auto-select the closest valid size
+    const newSize = validSizes.reduce((prev, curr) => 
+      Math.abs(curr - g.sizeIn) < Math.abs(prev - g.sizeIn) ? curr : prev
+    );
+    g.sizeIn = newSize;
+    
+    // Update UI elements that depend on size
+    const title = chip.querySelector('.title');
+    if (title) title.textContent = generateTitle(g.color, g.shape, g.sizeIn);
+    refreshMiniMeta(chip, g);
+    
+    // Update slider position and display value
+    sizeInput.value = getSliderIndexForSize(newSize);
+    sizeVal.textContent = `${newSize.toFixed(3)}"`;
+    
+    // Re-render the nail preview
+    render();
+  }
+  
+  if (useValidGlittersOnly && validSizes.length > 0) {
+    // Update slider to only allow valid sizes
+    const minValidIndex = Math.min(...validSizes.map(size => getSliderIndexForSize(size)));
+    const maxValidIndex = Math.max(...validSizes.map(size => getSliderIndexForSize(size)));
+    
+    // Create a mapping of valid slider positions
+    const validIndices = validSizes.map(size => getSliderIndexForSize(size)).sort((a, b) => a - b);
+    
+    // Store the valid indices on the slider for use in the input handler
+    sizeInput.dataset.validIndices = JSON.stringify(validIndices);
+    sizeInput.dataset.restricted = 'true';
+  } else {
+    // Remove restrictions
+    delete sizeInput.dataset.validIndices;
+    delete sizeInput.dataset.restricted;
+  }
+}
+
+// Function to handle color changes with priority system (color > size > shape)
+function handleColorChange(chip, g, newColor) {
+  const oldColor = g.color;
+  const oldSize = g.sizeIn;
+  const oldShape = g.shape;
+  
+  // Step 1: Change the color (highest priority)
+  g.color = newColor;
+  
+  if (!useValidGlittersOnly || validGlitters.length === 0) {
+    // No validation needed, just update UI
+    updateGlitterUI(chip, g);
+    return;
+  }
+  
+  // Step 2: Adjust size to closest valid one for the new color (second priority)
+  const validSizes = getValidSizesForColor(newColor);
+  if (validSizes.length > 0 && !validSizes.includes(g.sizeIn)) {
+    const closestSize = validSizes.reduce((prev, curr) => 
+      Math.abs(curr - g.sizeIn) < Math.abs(prev - g.sizeIn) ? curr : prev
+    );
+    g.sizeIn = closestSize;
+  }
+  
+  // Step 3: Adjust shape to valid one for the (color, size) combination (lowest priority)
+  const validShapes = getValidShapesForColorAndSize(g.color, g.sizeIn);
+  if (validShapes.length > 0 && !validShapes.includes(g.shape)) {
+    // Try to keep the old shape if it's valid, otherwise pick the first valid one
+    g.shape = validShapes.includes(oldShape) ? oldShape : validShapes[0];
+  }
+  
+  // Update all UI elements
+  updateGlitterUI(chip, g);
+}
+
+// Helper function to update all UI elements for a glitter
+function updateGlitterUI(chip, g) {
+  const title = chip.querySelector('.title');
+  const swatch = chip.querySelector('.swatch');
+  const sizeInput = chip.querySelector(`#size-${g.id}`);
+  const sizeVal = chip.querySelector(`#size-val-${g.id}`);
+  
+  // Update title and swatch
+  if (title) title.textContent = generateTitle(g.color, g.shape, g.sizeIn);
+  if (swatch) swatch.innerHTML = createShapeSwatch(g.shape, g.color);
+  
+  // Update size slider position and value
+  if (sizeInput && sizeVal) {
+    sizeInput.value = getSliderIndexForSize(g.sizeIn);
+    sizeVal.textContent = `${g.sizeIn.toFixed(3)}"`;
+  }
+  
+  // Update shape buttons
+  const allShapes = ['circle', 'square', 'hex', 'slice'];
+  allShapes.forEach(shape => {
+    const btn = chip.querySelector(`[data-shape="${shape}"]`);
+    if (btn) {
+      btn.classList.toggle('active', shape === g.shape);
+    }
+  });
+  
+  refreshMiniMeta(chip, g);
+  updateShapeButtons(chip, g);
+  updateSizeSlider(chip, g);
+  render();
+}
+
 // Preset colors
 const presetColors = [
-  { name: 'Red', color: '#ff4444' },
-  { name: 'Orange', color: '#ff8844' },
-  { name: 'Yellow', color: '#ffdd44' },
-  { name: 'Green', color: '#44ff44' },
-  { name: 'Blue', color: '#4488ff' },
-  { name: 'Indigo', color: '#6644ff' },
-  { name: 'Violet', color: '#aa44ff' },
-  { name: 'White', color: '#ffffff' },
-  { name: 'Black', color: '#222222' },
-  { name: 'Grey', color: '#888888' },
-  { name: 'Pink', color: '#ff66aa' }
+  { name: 'Banana Yellow', color: '#e2c636' },
+  { name: 'Aquamarine', color: '#64b7e3' },
+  { name: 'Gray', color: '#958b89' },
+  { name: 'Neon Blue', color: '#2593e0' },
+  { name: 'Cool Mint', color: '#a3c5ce' },
+  { name: 'Cherry Red', color: '#932a2f' },
+  { name: 'Blue Lagoon', color: '#47a3a2' },
+  { name: 'Orange', color: '#ca3821' },
+  { name: 'Pink Orchid', color: '#e99ab9' },
+  { name: 'Winter White', color: '#f5f6f8' },
+  { name: 'Mellow Yellow', color: '#c1b175' },
+  { name: 'Magenta', color: '#e33594' },
+  { name: 'Lavender', color: '#8f74a7' },
+  { name: 'Polar Blue', color: '#9fc8de' },
+  { name: 'Sweet Melon', color: '#cad7bd' },
+  { name: 'Periwinkle', color: '#7e9bc3' },
+  { name: 'Pink Chiffon', color: '#d4bac1' },
+  { name: 'Green', color: '#59bf76' },
+  { name: 'Cotton Candy Pink', color: '#c499ad' },
+  { name: 'Popsicle Pink', color: '#eacbc9' },
+  { name: 'Turquoise', color: '#005b77' },
+  { name: 'Navy', color: '#213d64' },
+  { name: 'Sugar Plum', color: '#b27ac5' },
+  { name: 'Apple Green', color: '#abb958' },
+  { name: 'Pink', color: '#da5d85' },
+  { name: 'Dandelion Yellow', color: '#c2891e' },
+  { name: 'Purple', color: '#5440a3' },
+  { name: 'Grape', color: '#74599e' },
+  { name: 'Fern', color: '#619a67' },
+  { name: 'Wild Watermelon', color: '#d95551' },
+  { name: 'Blueberry', color: '#2f74bf' },
+  { name: 'Hot Orange', color: '#c8353f' },
+  { name: 'Lemon Yellow', color: '#c8b66e' },
+  { name: 'Peach Blossom', color: '#e5a975' },
+  { name: 'Pastel Green', color: '#a6bd6b' },
+  { name: 'Aqua', color: '#7ea39c' },
+  { name: 'Powder Blue', color: '#578db3' },
+  { name: 'Teal', color: '#35a5bb' },
+  { name: 'Peach Puree', color: '#bd8838' },
+  { name: 'Bubblegum Pink', color: '#cf92a4' },
+  { name: 'Baby Blue', color: '#829eaa' },
+  { name: 'Evergreen', color: '#62ad82' },
+  { name: 'Hot Pink', color: '#f88d87' }
 ];
+
+// Function to sort colors by hue (red -> orange -> yellow -> green -> cyan -> blue -> purple -> pink)
+function sortColorsByHue(colors) {
+  return colors.slice().sort((a, b) => {
+    const hslA = hexToHsl(a.color);
+    const hslB = hexToHsl(b.color);
+    return hslA.h - hslB.h;
+  });
+}
+
+// Function to get color name from color value
+function getColorName(color) {
+  const matchingColor = presetColors.find(c => c.color.toLowerCase() === color.toLowerCase());
+  return matchingColor ? matchingColor.name : 'custom';
+}
+
+// Function to generate glitter title
+function generateTitle(color, shape, sizeIn) {
+  return `${getColorName(color)} ${shape} ${sizeIn.toFixed(3)}"`;
+}
 
 // Skin tone presets
 const skinTones = [
@@ -377,14 +911,38 @@ function render(){
     const pxPerIn = nailBox.w / 0.354; // Dynamic pixels per inch - same as piecesFor function
     const sizePx = clamp(g.sizeIn * pxPerIn, 0.5, 30);
     const count = piecesFor(g.density, g.sizeIn);
+    
+    let positions = [];
+    
+    if (usePoissonDistribution) {
+      // Use Poisson Disc Sampling for natural distribution
+      // Minimum radius based on density - lower density = more spacing
+      const baseRadius = sizePx * 0.8; // Base spacing relative to glitter size
+      const densityFactor = Math.max(0.3, (densityMax - g.density) / densityMax); // Invert density for spacing
+      const minRadius = baseRadius + (baseRadius * densityFactor * 2); // More spacing for lower density
+      positions = poissonDiscSampling(nailBox, minRadius, rand);
+      
+      // Apply jitter to Poisson positions
+      positions = positions.map(pos => {
+        const jitterAmount = minRadius * 0.15; // 15% of minimum radius
+        const jitterX = (rand() - 0.5) * 2 * jitterAmount;
+        const jitterY = (rand() - 0.5) * 2 * jitterAmount;
+        return { x: pos.x + jitterX, y: pos.y + jitterY };
+      });
+    } else {
+      // Use old uniform random distribution method
+      for(let i = 0; i < count; i++) {
+        const u = rand();
+        const v = rand();
+        const x = nailBox.x + (u) * nailBox.w;
+        const y = nailBox.y + (v) * nailBox.h;
+        positions.push({ x, y });
+      }
+    }
 
-    for(let i=0;i<count;i++){
-      // Generate coordinates within the nail bounding box
-      // For complex nail shapes, rely on clipping rather than rejection sampling
-      const u = rand();
-      const v = rand();
-      const x = nailBox.x + (u) * nailBox.w;
-      const y = nailBox.y + (v) * nailBox.h;
+    positions.forEach((pos, i) => {
+      const x = pos.x;
+      const y = pos.y;
       
       const rot = rand() * Math.PI * 2;
       const zOrder = rand(); // Random z-order for this piece
@@ -446,7 +1004,7 @@ function render(){
       
       // Add to collection with z-order for sorting
       allPieces.push({ element: pieceGroup, zOrder });
-    }
+    });
   }
   
   // Sort all pieces by z-order and add to glitter layer
@@ -596,8 +1154,8 @@ function refreshList(){
       <div class="chip-header">
         <div class="swatch">${createShapeSwatch(g.shape, g.color)}</div>
         <div class="meta">
-          <div class="title">${escapeHtml(g.name)}</div>
-          <div class="mini">${g.shape} • ${g.sizeIn.toFixed(3)}" • density ${g.density}</div>
+          <div class="title">${escapeHtml(generateTitle(g.color, g.shape, g.sizeIn))}</div>
+          <div class="mini">${getColorName(g.color)} • ${g.shape} • ${g.sizeIn.toFixed(3)}" • density ${g.density}</div>
         </div>
         <div class="actions">
           <button class="duplicate" title="Duplicate" aria-label="Duplicate glitter" data-action="duplicate">
@@ -645,7 +1203,7 @@ function refreshList(){
           <div class="ed-field full-width">
             <label class="ed-label">Color</label>
             <div class="color-chips" data-color-group="${g.id}">
-              ${presetColors.map(c => `
+              ${sortColorsByHue(presetColors).map(c => `
                 <div class="color-chip${g.color.toLowerCase() === c.color.toLowerCase() ? ' active' : ''}" 
                      data-color="${c.color}" 
                      style="background-color: ${c.color}" 
@@ -735,8 +1293,7 @@ function refreshList(){
         
         // Update glitter data
         g.shape = btn.dataset.shape;
-        g.name = autoName(g.shape, g.sizeIn);
-        title.textContent = g.name;
+        title.textContent = generateTitle(g.color, g.shape, g.sizeIn);
         chip.querySelector('.swatch').innerHTML = createShapeSwatch(g.shape, g.color);
         refreshMiniMeta(chip, g);
         render();
@@ -746,10 +1303,23 @@ function refreshList(){
     const sizeInput = chip.querySelector(`#size-${g.id}`);
     const sizeVal = chip.querySelector(`#size-val-${g.id}`);
     sizeInput.addEventListener('input', () => {
-      g.sizeIn = getSizeForSliderIndex(Number(sizeInput.value));
+      let targetIndex = Number(sizeInput.value);
+      
+      // If restricted to valid sizes, snap to nearest valid index
+      if (sizeInput.dataset.restricted && sizeInput.dataset.validIndices) {
+        const validIndices = JSON.parse(sizeInput.dataset.validIndices);
+        if (validIndices.length > 0) {
+          // Find the closest valid index
+          targetIndex = validIndices.reduce((prev, curr) => 
+            Math.abs(curr - targetIndex) < Math.abs(prev - targetIndex) ? curr : prev
+          );
+          sizeInput.value = targetIndex; // Update slider position to snapped value
+        }
+      }
+      
+      g.sizeIn = getSizeForSliderIndex(targetIndex);
       sizeVal.textContent = `${g.sizeIn.toFixed(3)}"`;
-      g.name = autoName(g.shape, g.sizeIn);
-      title.textContent = g.name;
+      title.textContent = generateTitle(g.color, g.shape, g.sizeIn);
       refreshMiniMeta(chip, g);
       render();
     });
@@ -784,9 +1354,7 @@ function refreshList(){
           const newColor = chipEl.dataset.color;
           colorPicker.value = newColor;
           colorHex.value = newColor;
-          g.color = newColor;
-          chip.querySelector('.swatch').innerHTML = createShapeSwatch(g.shape, newColor);
-          render();
+          handleColorChange(chip, g, newColor);
         }
       });
     });
@@ -795,38 +1363,56 @@ function refreshList(){
     colorPicker.addEventListener('input', () => {
       const val = normalizeHex(colorPicker.value);
       colorHex.value = val;
-      g.color = val;
-      chip.querySelector('.swatch').innerHTML = createShapeSwatch(g.shape, val);
-      render();
+      handleColorChange(chip, g, val);
     });
     colorHex.addEventListener('input', () => {
       const val = normalizeHex(colorHex.value);
       if(/^#([0-9a-f]{6})$/i.test(val)){
         colorPicker.value = val;
-        g.color = val;
-        chip.querySelector('.swatch').innerHTML = createShapeSwatch(g.shape, val);
-        render();
+        handleColorChange(chip, g, val);
       }
     });
 
     glitterList.appendChild(chip);
+    
+    // Update shape buttons and size slider based on valid combinations
+    updateShapeButtons(chip, g);
+    updateSizeSlider(chip, g);
   }
 }
 
 function refreshMiniMeta(chip, g){
   chip.querySelector('.meta .mini').textContent =
-    `${g.shape} • ${g.sizeIn.toFixed(3)}" • density ${g.density}`;
+    `${getColorName(g.color)} • ${g.shape} • ${g.sizeIn.toFixed(3)}" • density ${g.density}`;
 }
 
 // Create randomized glitter and expand it
 function addRandomGlitter(open=true){
-  const shapes = ['circle','square','hex','slice'];
-  const shape = shapes[Math.floor(Math.random()*shapes.length)];
-  const sizeIn = availableSizes[Math.floor(Math.random()*availableSizes.length)];
-  const hue = Math.floor(Math.random()*360);
-  const sat = 0.45 + Math.random()*0.4;
-  const lig = 0.55 + Math.random()*0.2;
-  const color = hslToHex(hue/360, sat, lig);
+  let shape, sizeIn, color;
+  
+  if (useValidGlittersOnly && validGlitters.length > 0) {
+    // Use only valid combinations
+    const validCombinations = getValidGlitterCombinations();
+    if (validCombinations.length > 0) {
+      const randomCombo = validCombinations[Math.floor(Math.random() * validCombinations.length)];
+      shape = randomCombo.shape;
+      sizeIn = randomCombo.sizeIn;
+      color = randomCombo.color;
+    } else {
+      // Fallback to regular random if no valid combinations found
+      const shapes = ['circle','square','hex','slice'];
+      shape = shapes[Math.floor(Math.random()*shapes.length)];
+      sizeIn = availableSizes[Math.floor(Math.random()*availableSizes.length)];
+      color = presetColors[Math.floor(Math.random() * presetColors.length)].color;
+    }
+  } else {
+    // Regular random selection
+    const shapes = ['circle','square','hex','slice'];
+    shape = shapes[Math.floor(Math.random()*shapes.length)];
+    sizeIn = availableSizes[Math.floor(Math.random()*availableSizes.length)];
+    color = presetColors[Math.floor(Math.random() * presetColors.length)].color;
+  }
+  
   const density = 20 + Math.floor(Math.random()*(densityMax-20));
   const g = {
     id: crypto.randomUUID(),
@@ -944,6 +1530,41 @@ baseColorHex.addEventListener('input', () => {
   }
 });
 
+// Distribution method toggle
+distributionToggle.addEventListener('change', () => {
+  usePoissonDistribution = distributionToggle.checked; // checked = Poisson, unchecked = uniform random
+  render();
+});
+
+// Valid glitters toggle
+validGlittersToggle.addEventListener('change', () => {
+  useValidGlittersOnly = validGlittersToggle.checked;
+  
+  // Update all existing glitters when toggle changes
+  const allChips = document.querySelectorAll('.chip[data-id]');
+  allChips.forEach(chip => {
+    const chipId = chip.dataset.id;
+    const glitter = mix.find(g => g.id === chipId);
+    if (glitter) {
+      if (useValidGlittersOnly) {
+        // Find the best valid combination for this glitter's color
+        const bestCombo = findBestValidCombination(glitter.color, glitter.sizeIn, glitter.shape);
+        
+        // Update the glitter with the best valid combination
+        glitter.sizeIn = bestCombo.sizeIn;
+        glitter.shape = bestCombo.shape;
+        
+        // Update all UI elements for this glitter
+        updateGlitterUI(chip, glitter);
+      } else {
+        // Just update the UI restrictions when turning off
+        updateShapeButtons(chip, glitter);
+        updateSizeSlider(chip, glitter);
+      }
+    }
+  });
+});
+
 // Initialize
 async function initialize() {
   initializeSkinTones();
@@ -958,7 +1579,10 @@ async function initialize() {
     nailBase = normalizeHex(baseColor.value);
   }
   
-  // Load external SVG first
+  // Load valid glitters data
+  await loadValidGlitters();
+  
+  // Load external SVG
   await loadExternalSVG();
   
   // Initial render

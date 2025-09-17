@@ -17,10 +17,26 @@
 
     <!-- Right: Controls (no persistent add form) -->
     <section class="panel" aria-label="Glitter controls">
-      <h2>Mix controls</h2>
-      <div class="controls" id="controls">
-        <div class="row control-top" >
+
+        <h2>Current mix</h2>
+        <div class="row" style="padding: 0 14px 14px;">
           <button class="btn" id="add-random">+ Add glitter</button>
+          <button class="btn secondary" id="randomize">Randomize mix</button>
+          <button class="btn warn" id="clear-mix">Clear mix</button>
+        </div>
+
+        <div class="glitter-list" id="glitter-list" aria-live="polite"></div>
+        
+        <div class="row" style="padding: 0 14px 14px;">
+          <button class="btn secondary" id="reroll">Reroll placement</button>
+          <button class="btn secondary" id="force-refresh">Force refresh</button>
+          <button class="btn secondary" id="export-json">Export JSON</button>
+          <button class="btn secondary" id="import-json">Import JSON</button>
+        </div>
+        
+        
+        <h2>Settings</h2>
+        <div class="row control-top" >
           <div class="control-row skin-control">
             <div class="label">Skin tone</div>
             <div class="skin-tone-chips" id="skin-tone-chips">
@@ -35,20 +51,19 @@
             </div>
           </div>
         </div>
-
-        <h2>Current mix</h2>
-        <div class="row" style="padding: 0 14px 14px;">
-          <button class="btn secondary" id="randomize">Randomize mix</button>
-          <button class="btn warn" id="clear-mix">Clear mix</button>
+        
+        <div class="row" style="padding: 0 14px 14px; align-items: center; gap: 8px;">
+          <label class="toggle-label">
+            <input type="checkbox" id="distribution-toggle" />
+            <span class="toggle-text">Uniform scatter</span>
+          </label>
         </div>
 
-        <div class="glitter-list" id="glitter-list" aria-live="polite"></div>
-        
-        <div class="row" style="padding: 0 14px 14px;">
-          <button class="btn secondary" id="reroll">Reroll placement</button>
-          <button class="btn secondary" id="force-refresh">Force refresh</button>
-          <button class="btn secondary" id="export-json">Export JSON</button>
-          <button class="btn secondary" id="import-json">Import JSON</button>
+        <div class="row" style="padding: 0 14px 14px; align-items: center; gap: 8px;">
+          <label class="toggle-label">
+            <input type="checkbox" id="valid-glitters-toggle" />
+            <span class="toggle-text">Valid glitters only</span>
+          </label>
         </div>
       </div>
     </section>
